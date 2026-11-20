@@ -52,8 +52,10 @@ export function createUI(api) {
   ui.isSheet = () => matchMedia('(max-width: 760px), (orientation: portrait) and (max-width: 1100px)').matches;
   function updateInsets() {
     const W = innerWidth, H = innerHeight;
-    const rail = $('#rail').getBoundingClientRect(), dock = $('#dock').getBoundingClientRect(), hud = $('#hud').getBoundingClientRect();
-    insets.l = rail.right + 6; insets.t = Math.max(hud.bottom + 6, 70); insets.b = H - dock.top + 6; insets.r = 10;
+    const rail = $('#rail').getBoundingClientRect(), modes = $('#modes').getBoundingClientRect(), dock = $('#dock').getBoundingClientRect(), hud = $('#hud').getBoundingClientRect();
+    insets.l = rail.right + 6; insets.t = Math.max(hud.bottom + 6, 70); insets.r = W - modes.left + 6;
+    // Energy mode has no menu bar; leave room for the story box instead
+    insets.b = document.body.classList.contains('mode-energy') ? Math.min(230, H * 0.3) : H - dock.top + 6;
     api.setInsets(insets.l, insets.r, insets.t, insets.b);
     placeBanner();
   }
@@ -136,7 +138,7 @@ export function createUI(api) {
   // Pop-up box in the middle of the screen (students tap the button to close it)
   // ---------------------------------------------------------------
   let modalEl = null;
-  ui.modal = ({ title = '', text = '', button = 'OK', icon: ic = '', onOk = null, buttons = null, tone = '' } = {}) => {
+  ui.modal = ({ title = '', text = '', html = '', button = 'OK', icon: ic = '', onOk = null, buttons = null, tone = '', onClose = null } = {}) => {
     ui.closeModal();
     speech.stop();
     const m = document.createElement('div'); m.className = 'modal-back';
@@ -144,12 +146,14 @@ export function createUI(api) {
     m.innerHTML = `<div class="modal ${tone}" role="dialog" aria-modal="true">
         ${speech.ok ? `<button class="say-btn small modal-say"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Read to me</span></button>` : ''}
         ${ic ? `<div class="modal-ico">${icon(ic)}</div>` : ''}
-        <div class="modal-body">${title ? `<h2>${esc(title)}</h2>` : ''}<p class="lead">${esc(text)}</p></div>
+        ${onClose ? '<button class="close modal-x" aria-label="Close">✕</button>' : ''}
+        <div class="modal-body">${title ? `<h2>${esc(title)}</h2>` : ''}${html || `<p class="lead">${esc(text)}</p>`}</div>
         <div class="modal-btns">${btns.map((b, i) => `<button class="modal-ok ${b.cls || ''}" data-mb="${i}">${esc(b.label)}</button>`).join('')}</div>
       </div>`;
     document.body.appendChild(m); modalEl = m;
     const sb = m.querySelector('.modal-say'); if (sb) sb.onclick = () => speech.read(m.querySelector('.modal-body'), sb);
     m.querySelectorAll('[data-mb]').forEach(el => el.onclick = () => { ui.closeModal(); const f = btns[+el.dataset.mb].onClick; f && f(); });
+    const mx = m.querySelector('.modal-x'); if (mx) mx.onclick = () => { ui.closeModal(); onClose(); };
     return m;
   };
   ui.closeModal = () => { if (modalEl) { speech.stop(); modalEl.remove(); modalEl = null; } };
@@ -254,7 +258,7 @@ export function createUI(api) {
   $('#aboutBody').innerHTML = `
     <p><b>Rock Cycle Explorer</b> is an independent classroom project. It was not made by or endorsed by any museum, university, publisher, or agency.</p>
     <p><b>The idea:</b> inspired by the 3D rock cycle simulation on SciSim (scisim.org). Everything on this site was built new, for iPads.</p>
-    <p><b>Ground and rock pictures:</b> real photos from Poly Haven (polyhaven.com), free to use (CC0).</p>
+    <p><b>Ground and rock pictures:</b> real photos from Poly Haven (polyhaven.com), free to use (CC0). <b>Earth globe:</b> NASA Blue Marble (public domain).</p>
     <p><b>Music:</b> by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0. The songs have fun names on this site. Their real titles are: ${((window.MUSIC && window.MUSIC.songs) || []).map(x => `“${esc(x.original || x.name)}”`).join(', ')}.</p>
     <p><b>3D engine:</b> Three.js (MIT license). <b>Fonts:</b> Atkinson Hyperlegible and Big Shoulders Display (SIL Open Font License).</p>`;
   if ('requestFullscreen' in document.documentElement && !navigator.standalone) {

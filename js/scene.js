@@ -21,10 +21,12 @@ export function createScene(container) {
   renderer.setClearColor(0x000000, 0);
   container.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 120);
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 600);
   const FOV_T = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const SUN = new THREE.Vector3(-0.55, 0.85, 0.5).normalize();
-  api.THREE = THREE; api.scene = scene; api.camera = camera;
+  api.THREE = THREE; api.scene = scene; api.camera = camera; api.renderer = renderer;
+  api.space = null;          // Energy mode adds a space scene (stars, Sun, Earth) drawn behind the block
+  api.inputOn = true;        // false = touches don't move the block (during the space scenes)
 
   const U = {
     uT: { value: 0 }, uSun: { value: SUN }, uLava: { value: 999 }, uFront: { value: 0.6 }, uGlow: { value: 0 },
@@ -47,7 +49,7 @@ export function createScene(container) {
     }, undefined, () => res());
   })));
 
-  const block = new THREE.Group(); scene.add(block);
+  const block = new THREE.Group(); scene.add(block); api.block = block;
 
   // ---------- the ground ----------
   const NX = 384, NZ = 154, W8 = G.XR - G.XL, D = 2 * G.ZF;
@@ -274,9 +276,24 @@ export function createScene(container) {
   const seep = new THREE.Points(seepGeo, seepMat); seep.renderOrder = 11; seep.frustumCulled = false; block.add(seep);
   const seepArrows = []; for (let i = 0; i < 3; i++) { const a = sprite(arrowT, 0x7fd3ff, { depthTest: false, order: 11, opacity: 0 }); a.material.rotation = Math.PI; a.scale.set(0.12, 0.12, 1); block.add(a); seepArrows.push(a); }
   const glue = sprite(glowT, 0xffd54f, { add: true, depthTest: false, order: 9, opacity: 0 }); glue.scale.set(0.7, 0.42, 1); block.add(glue);
-  let fx = { arrows: null, column: null, cloud: null, heat: 0, heatColor: 0xff7a20, sparkle: 0, sparkColor: 0xcfeeff, seep: 0, glue: 0, eruptT: -1, lavaT: -1 };
+  // Energy mode: vapor from the sea, and heat below the magma chamber
+  const VAPN = 110, vapPos = new Float32Array(VAPN * 3), vapSeed = [];
+  for (let i = 0; i < VAPN; i++) vapSeed.push([G.SHORE + 0.3 + Math.random() * (G.XR - G.SHORE - 0.4), (Math.random() - 0.5) * 2.8, Math.random()]);
+  const vapGeo = new THREE.BufferGeometry(); vapGeo.setAttribute('position', new THREE.BufferAttribute(vapPos, 3));
+  const vapMat = new THREE.PointsMaterial({ map: glowT, color: 0xf2f8ff, size: 0.32, transparent: true, opacity: 0, depthWrite: false });
+  const vapPts = new THREE.Points(vapGeo, vapMat); vapPts.renderOrder = 6; vapPts.frustumCulled = false; block.add(vapPts);
+  const deepGlow = []; for (let i = 0; i < 3; i++) { const g = sprite(glowT, i ? 0xff3010 : 0xff4a14, { add: true, depthTest: false, order: 9, opacity: 0 }); block.add(g); deepGlow.push(g); }
+  const deepArrows = []; for (let i = 0; i < 5; i++) { const a = sprite(arrowT, 0xff6a3a, { depthTest: false, order: 11, opacity: 0 }); a.scale.set(0.16, 0.16, 1); block.add(a); deepArrows.push(a); }
+  let fx = { cloudAt: null, vapor: 0, vaporTo: [3, 1, 0], deep: 0, arrows: null, column: null, cloud: null, heat: 0, heatColor: 0xff7a20, sparkle: 0, sparkColor: 0xcfeeff, seep: 0, glue: 0, eruptT: -1, lavaT: -1 };
+  api.cloudSpot = p => [p[0], Math.max(p[1], 0.4) + 0.95, clamp(p[2], -1.2, 1.25)];
   api.fx = {
     clear() { fx.arrows = null; fx.column = null; fx.cloud = null; fx.heat = 0; fx.sparkle = 0; fx.seep = 0; fx.glue = 0; },
+    // Energy mode: a cloud placed anywhere (pos = cloud middle), any size, rain on or off
+    cloudAt(pos, size = 1, rain = false) { fx.cloudAt = pos ? { pos, size, rain } : null; },
+    // Energy mode: water vapor rising from the sea toward a spot in the sky
+    vapor(amount, to) { fx.vapor = amount; if (to) fx.vaporTo = to; },
+    // Energy mode: red heat glowing under the magma chamber
+    deepHeat(amount) { fx.deep = amount; },
     cloud(p) { fx.cloud = p; },                     // p = point under the cloud, or null
     arrows(kind, p) { fx.arrows = kind ? { kind, p } : null; },   // 'down', 'squeeze', 'up'
     column(p) { fx.column = p; },
@@ -311,7 +328,7 @@ export function createScene(container) {
     const L = insets.l + 4, R = W - insets.r - 4, T = insets.t, B = H - insets.b;
     const order = [...tags].sort((a, b) => a.pri - b.pri);
     for (const t of order) {
-      if (!labelsOn || (t.face && fromAbove)) { t.el.style.display = 'none'; continue; }
+      if (!labelsOn || api.hideLabels || !block.visible || block.scale.x < 0.6 || (t.face && fromAbove)) { t.el.style.display = 'none'; continue; }
       v3.copy(t.p).applyMatrix4(block.matrixWorld).project(camera);
       if (v3.z > 1 || Math.abs(v3.x) > 1.1 || Math.abs(v3.y) > 1.1) { t.el.style.display = 'none'; continue; }
       if (!t.w) { t.el.style.display = ''; t.w = t.el.offsetWidth; t.h = t.el.offsetHeight; }
@@ -417,6 +434,7 @@ export function createScene(container) {
     view.k = k1; return true;
   }
   el.addEventListener('pointerdown', e => {
+    if (!api.inputOn) return;
     try { el.setPointerCapture(e.pointerId); } catch (_) {}
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     rotV.y = rotV.p = 0; zoomV = 0; viewTween = null; lastInput = performance.now();
@@ -457,7 +475,7 @@ export function createScene(container) {
   el.addEventListener('pointercancel', endPointer);
   el.addEventListener('contextmenu', e => e.preventDefault());
   el.addEventListener('wheel', e => {
-    e.preventDefault(); viewTween = null; zoomV = 0; lastInput = performance.now();
+    e.preventDefault(); if (!api.inputOn) return; viewTween = null; zoomV = 0; lastInput = performance.now();
     zoomAt(Math.exp(clamp(e.deltaY, -120, 120) * (e.ctrlKey ? 0.012 : 0.0035)), e.clientX, e.clientY);
   }, { passive: false });
   api.zoomBy = f => zoomAt(f, (W + insets.l - insets.r) / 2, (H + insets.t - insets.b) / 2);
@@ -484,7 +502,7 @@ export function createScene(container) {
     if (!running) return;
     requestAnimationFrame(frame);
     const rdt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now; frameN++;
-    const idle = !api.busy && !gesture && now - lastInput > 7000 && !viewTween && Math.abs(rotV.y) < 1e-5 && Math.abs(zoomV) < 1e-4 && fx.lavaT < 0;
+    const idle = !api.busy && !api.awake && !(api.space && api.space.on) && !gesture && now - lastInput > 7000 && !viewTween && Math.abs(rotV.y) < 1e-5 && Math.abs(zoomV) < 1e-4 && fx.lavaT < 0;
     if (idle && !dirty && frameN % 3) return;           // calm water when nobody is touching: fewer frames
     const dt = idle ? rdt * 3 : rdt;
     const sdt = dt * api.timeScale;                       // process time (stops when paused)
@@ -508,15 +526,40 @@ export function createScene(container) {
     if (popT < 1) { popT = Math.min(1, popT + rdt * 2.5); const s = 1 + 0.6 * Math.sin(popT * Math.PI); grain.scale.setScalar(s); ring.material.opacity = 1 - popT; ring.scale.setScalar(0.25 + popT * 0.9); ring.position.copy(gp); }
     else { ring.material.opacity = 0; }
     grainGlow.material.opacity = 0.5 + 0.2 * Math.sin(ambient * 5);
-    cloud.visible = !!fx.cloud;
-    if (fx.cloud) {
-      cloud.position.set(fx.cloud[0], Math.max(fx.cloud[1], 0.4) + 0.95, clamp(fx.cloud[2], -1.2, 1.25));
+    cloud.visible = !!(fx.cloud || fx.cloudAt);
+    rain.visible = !!fx.cloud || !!(fx.cloudAt && fx.cloudAt.rain);
+    if (fx.cloudAt && !fx.cloud) { const c = fx.cloudAt; cloud.position.set(c.pos[0], c.pos[1], c.pos[2]); cs.scale.set(1.25 * c.size, 0.78 * c.size, 1); cs.material.opacity = Math.min(1, c.size * 1.4); }
+    else { cs.scale.set(1.25, 0.78, 1); cs.material.opacity = 1; }
+    if (fx.cloud) cloud.position.set(...api.cloudSpot(fx.cloud));
+    if (rain.visible) {
       for (let i = 0; i < RAIN; i++) {
         const r = rainSeed[i]; r[1] = (r[1] + sdt * 1.6) % 1; const yy = -0.12 - r[1] * 0.85;
         rainPos.set([r[0], yy, r[2], r[0] - 0.008, yy - 0.07, r[2]], i * 6);
       }
       rainGeo.attributes.position.needsUpdate = true;
     }
+    vapMat.opacity += (Math.min(1, fx.vapor) * 0.45 - vapMat.opacity) * Math.min(1, rdt * 3);
+    if (vapMat.opacity > 0.01) {
+      const to = fx.vaporTo;
+      for (let i = 0; i < VAPN; i++) {
+        const v = vapSeed[i]; v[2] = (v[2] + rdt * 0.16) % 1; const t = v[2], e = t * t;
+        vapPos[i * 3] = v[0] + (to[0] - v[0]) * e + 0.05 * Math.sin(t * 9 + i);
+        vapPos[i * 3 + 1] = G.SEA + 0.02 + (to[1] - G.SEA) * t;
+        vapPos[i * 3 + 2] = v[1] + (to[2] - v[1]) * e;
+      }
+      vapGeo.attributes.position.needsUpdate = true;
+    }
+    deepGlow.forEach((g, i) => {
+      const pulse = 0.55 + 0.45 * Math.sin(ambient * 2.6 - i * 0.9);
+      g.material.opacity += (fx.deep * pulse - g.material.opacity) * Math.min(1, rdt * 4);
+      g.position.set(G.CHM.x + (i ? (i === 1 ? -1 : 1) * 0.85 : 0), G.CHM.y - 0.66, G.FZ + 0.04);
+      const sc = (i ? 1.9 : 2.9) * (0.8 + 0.25 * pulse); g.scale.set(sc, sc * 0.6, 1);
+    });
+    deepArrows.forEach((a, i) => {
+      const s = (ambient * 0.45 + i / 5) % 1;
+      a.material.opacity = fx.deep * Math.sin(s * Math.PI) * 0.95;
+      a.position.set(G.CHM.x + (i - 2) * 0.4, G.CHM.y - 0.85 + s * 0.45, G.FZ + 0.06);
+    });
     arrows.forEach(a => a.visible = false); column.visible = false;
     if (fx.arrows) {
       const { kind, p } = fx.arrows, wob = 0.03 * Math.sin(ambient * 6), z = G.FZ + 0.05;
@@ -606,7 +649,14 @@ export function createScene(container) {
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld();
     U.uCam.value.copy(camera.position);
-    renderer.render(scene, camera);
+    if (api.space && api.space.on) {
+      api.space.update(rdt, now, W, H, insets);
+      renderer.autoClear = false; renderer.clear();
+      renderer.render(api.space.scene, api.space.camera);
+      renderer.clearDepth();
+      if (block.visible) renderer.render(scene, camera);
+      renderer.autoClear = true;
+    } else renderer.render(scene, camera);
     dirty = false;
     placeLabels();
     for (const f of api.afterRenderHooks) f();

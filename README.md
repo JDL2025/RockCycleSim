@@ -19,6 +19,22 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 | **Camera moves** | Transport & Deposition turns the block so the river and ocean show. Cementation zooms in to the buried layers, shows water seeping down with arrows, glows gold as the minerals glue the sediment, then zooms back out. |
 | **Left side** | Labels on/off, Music, Help (How to explore, “Is this the real size?”, About & credits). |
 
+## Modes (menu on the right)
+
+**Real World Rock Cycle** is the default: everything above.
+
+**Energy** asks: “Making different kinds of rocks requires ENERGY! Which kind of rock would you like to make?”
+Each story has 4 parts. Students tap **Continue the Energy Journey** to go on. Touches can’t move the view while in space, but they can turn and zoom the block in the parts on Earth.
+
+| Sedimentary (powered by the Sun) | Igneous (powered by Earth’s ancient heat) |
+|---|---|
+| 1. Zoom out to space; the Sun slides in and sends energy waves and arrows to Earth. | 1. Zoom out to space; space rocks crash together and build a swirling lava Earth, still being hit by asteroids. |
+| 2. The energy hits the Pacific Ocean; the water steams into vapor. | 2. Earth cools: dark crust, then air, oceans filling in, clouds and green land. |
+| 3. Fly down into the vapor to the 3D block; vapor rises off the sea, condenses into a cloud, and moves over the mountain (where the Weathering & Erosion cloud is). | 3. Earth is sliced open; thermometer tags show each layer’s temperature. |
+| 4. The same Weathering & Erosion animation plays. “Powered by THE SUN!” | 4. Back to the block, zoomed in on the magma chamber, with red heat pulsing beneath it. |
+
+The end buttons go to the other story or back to the Real World Rock Cycle. Layer temperatures come from National Geographic Education, Science News Explores and Physical Geology (2nd ed.), rounded for students.
+
 ## Updating later
 
 Claude manages this repository for you. If you ever upload files yourself: **Add file → Upload files**, drag in the changed files (keep their folders), then **Commit changes**. Wait 1–2 minutes and reload on the iPad.
@@ -30,6 +46,7 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 | Any words students read (the message at the top, the color flashes, the menu-bar buttons, the “Start here” / “Next” tags, the not-to-scale note) | `js/data/rockcycle.js` |
 | Which word is yellow | `js/data/rockcycle.js` (put `*stars*` around the word) |
 | The grain colors (and flash colors) | `js/data/rockcycle.js` (`rocks`) |
+| All Energy mode words, the layer temperatures, the button words | `js/data/energy.js` |
 | Songs, song names, music on/off at start | `js/data/music.js` |
 | Label names on the block (Mountains, Volcano…) | `js/scene.js` (search for `LABELS`) |
 
@@ -45,7 +62,7 @@ Each data file starts with a plain-English guide. On GitHub, open the file, tap 
 ## Credits
 
 - Idea inspired by the SciSim 3D rock cycle simulation (scisim.org). Everything here was built new.
-- Ground and rock photos: Poly Haven (polyhaven.com), CC0.
+- Ground and rock photos: Poly Haven (polyhaven.com), CC0. Earth globe: NASA Blue Marble (public domain).
 - Music: Kevin MacLeod (incompetech.com), CC BY 4.0.
 - Three.js (MIT). Fonts: Atkinson Hyperlegible, Big Shoulders Display (SIL OFL).
 
@@ -59,11 +76,14 @@ js/scene.js           the 3D block, effects, labels, touch controls
 js/glsl.js            shaders (ground, rock faces, sea, river)
 js/geo.js             the shape of the land and the grain's paths
 js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, Next tags
+js/energy.js          Energy mode: the two stories
+js/space.js           the space scene: stars, Sun, Earth, space rocks
 js/app.js             panels, pop-ups, celebration, music, Read to me
 js/speech.js          Read to me
 js/icons.js           icons
 js/data/rockcycle.js  all the words (edit me)
 js/data/music.js      songs (edit me)
+js/data/energy.js     Energy mode words (edit me)
 assets/tex/           ground and rock photo textures
 assets/fonts/, lib/, music/   fonts, Three.js, songs
 build_tools/          how the textures were made (not needed by the site)

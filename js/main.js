@@ -19,6 +19,8 @@ if (!ok) {
     // the rock cycle is its own file, so a problem there can't stop the 3D view
     import('./cycle.js').then(m => {
       if (window.ROCK_CYCLE) window.RCE.cycle = m.createCycle(api, ui, window.ROCK_CYCLE);
+      // Energy mode is its own file, so a problem there can't stop the Real World Rock Cycle
+      return import('./energy.js').then(e => { if (window.ENERGY && window.RCE.cycle) window.RCE.energy = e.createEnergy(api, ui, window.RCE.cycle, window.ENERGY); });
     }).catch(e => console.warn('Rock cycle not loaded', e));
   });
 }

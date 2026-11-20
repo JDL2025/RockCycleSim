@@ -66,7 +66,7 @@ export function createCycle(api, ui, D) {
     if (now) { savedView = null; api.flyTo(v, 1200); }
     else viewTimer = setTimeout(() => { savedView = null; api.flyTo(v, 1600); }, 2600);
   }
-  function play(k) {
+  function play(k, { quiet = false } = {}) {     // quiet = no message at the top (used by Energy mode)
     settle();
     ui.clearFlare();
     if (k !== 'cement') restoreView(true);
@@ -96,8 +96,8 @@ export function createCycle(api, ui, D) {
       if (!savedView) savedView = api.getView();
       api.flyTo({ yaw: 0.2, pitch: 0.12, k: 0.3, target: st.pos.slice() }, 1600);
     }
-    bannerStart();
-    ui.setHud(`Watching: ${P[k].name}`);
+    if (quiet) { bannerEl = null; } else { bannerStart(); ui.setHud(`Watching: ${P[k].name}`); }
+    anim.quiet = quiet;
     updateDock();
   }
   function finish() {
@@ -114,7 +114,7 @@ export function createCycle(api, ui, D) {
       bannerMade(a.k);
     } else if (sp.ok) ui.burst(sp.x, sp.y, true);
     if (a.k === 'cement') restoreView(false);
-    ui.setHud();
+    if (!a.quiet) ui.setHud();
     updateDock();
   }
 
@@ -166,5 +166,13 @@ export function createCycle(api, ui, D) {
   api.grain.set(st.pos);
   api.grain.color(COLOR(R[st.rock].color));
   updateDock();
-  return { st, play: k => play(k), isAnimating: () => !!anim };
+  // back to the very beginning (used when switching modes)
+  function reset() {
+    anim = null; api.busy = false; api.fx.clear(); api.fx.resetLava();
+    clearTimeout(viewTimer); savedView = null; ui.clearFlare(); ui.banner(null);
+    st.rock = D.start; st.pos = G.LOC[D.start].slice(); st.proc = ''; st.lastDone = '';
+    api.grain.trailReset(); api.grain.scale(1); api.grain.set(st.pos); api.grain.color(COLOR(R[st.rock].color));
+    updateDock();
+  }
+  return { st, play: (k, o) => play(k, o), reset, isAnimating: () => !!anim };
 }
