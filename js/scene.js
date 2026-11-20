@@ -225,7 +225,8 @@ export function createScene(container) {
   const sparks = []; for (let i = 0; i < 12; i++) { const s = sprite(starT, 0xcfeeff, { add: true, depthTest: false, order: 11, opacity: 0 }); s.userData.a = Math.random() * 6.28; s.userData.r = 0.12 + Math.random() * 0.14; s.userData.p = Math.random() * 6.28; block.add(s); sparks.push(s); }
 
   // ---------- the grain of rock (always visible) and its trail ----------
-  const grain = new THREE.Mesh(new THREE.SphereGeometry(0.062, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffcdd2, depthTest: false }));
+  // (the grain is 'transparent' only so it is drawn after its glow, which keeps its color true)
+  const grain = new THREE.Mesh(new THREE.SphereGeometry(0.062, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffcdd2, depthTest: false, transparent: true }));
   grain.renderOrder = 12; block.add(grain);
   const grainGlow = sprite(glowT, 0xfff3a0, { add: true, depthTest: false, order: 11, opacity: 0.85 }); grainGlow.scale.set(0.42, 0.42, 1); grain.add(grainGlow);
   // a dark-and-white outline, so the grain shows up even on glowing magma
@@ -249,7 +250,10 @@ export function createScene(container) {
   api.grain = {
     set(p) { grain.position.set(p[0], p[1], p[2]); api.requestRender(); },
     pos: () => [grain.position.x, grain.position.y, grain.position.z],
-    color(hex) { grain.material.color.setHex(hex); trMat.uniforms.uColor.value.setHex(hex); },
+    color(hex) {                                     // the grain, its glow and its trail all take the rock's color
+      grain.material.color.setHex(hex); trMat.uniforms.uColor.value.setHex(hex);
+      grainGlow.material.color.setHex(hex);
+    },
     trailReset() { trN = 0; trGeo.setDrawRange(0, 0); },
     trailPush(p) {
       trPos.copyWithin(3, 0, (TR - 1) * 3); trPos[0] = p[0]; trPos[1] = p[1]; trPos[2] = p[2];
@@ -503,7 +507,7 @@ export function createScene(container) {
     const gp = grain.position;
     if (popT < 1) { popT = Math.min(1, popT + rdt * 2.5); const s = 1 + 0.6 * Math.sin(popT * Math.PI); grain.scale.setScalar(s); ring.material.opacity = 1 - popT; ring.scale.setScalar(0.25 + popT * 0.9); ring.position.copy(gp); }
     else { ring.material.opacity = 0; }
-    grainGlow.material.opacity = 0.65 + 0.3 * Math.sin(ambient * 5);
+    grainGlow.material.opacity = 0.5 + 0.2 * Math.sin(ambient * 5);
     cloud.visible = !!fx.cloud;
     if (fx.cloud) {
       cloud.position.set(fx.cloud[0], Math.max(fx.cloud[1], 0.4) + 0.95, clamp(fx.cloud[2], -1.2, 1.25));

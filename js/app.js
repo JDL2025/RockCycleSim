@@ -1,5 +1,5 @@
 // =====================================================================
-// Rock Cycle Explorer — menus, panels, the rock card shell, pop-ups,
+// Rock Cycle Explorer — menus, panels, pop-ups,
 // celebrations, read-aloud and music. Same parts as Plate Motion
 // Explorer, so the sites feel like one family.
 // The 3D block lives in scene.js; the rock cycle itself is in cycle.js.
@@ -16,7 +16,6 @@ export function createUI(api) {
   const ui = { api, esc, icon, store };
   const speech = createSpeech();
   ui.speech = speech;
-  const card = $('#card'), cardContent = $('#cardContent'), cardScroll = $('#cardScroll');
 
   // ---------------------------------------------------------------
   // HUD line and banner
@@ -47,7 +46,7 @@ export function createUI(api) {
   }
 
   // ---------------------------------------------------------------
-  // Free space for the 3D block (between the rail, card, title and menu bar)
+  // Free space for the 3D block (between the left bar, title and menu bar)
   // ---------------------------------------------------------------
   const insets = { l: 0, r: 0, t: 0, b: 0 };
   ui.isSheet = () => matchMedia('(max-width: 760px), (orientation: portrait) and (max-width: 1100px)').matches;
@@ -55,10 +54,6 @@ export function createUI(api) {
     const W = innerWidth, H = innerHeight;
     const rail = $('#rail').getBoundingClientRect(), dock = $('#dock').getBoundingClientRect(), hud = $('#hud').getBoundingClientRect();
     insets.l = rail.right + 6; insets.t = Math.max(hud.bottom + 6, 70); insets.b = H - dock.top + 6; insets.r = 10;
-    if (!card.hidden) {
-      const c = card.getBoundingClientRect();
-      if (ui.isSheet()) insets.b = H - c.top + 6; else insets.r = W - c.left + 8;
-    }
     api.setInsets(insets.l, insets.r, insets.t, insets.b);
     placeBanner();
   }
@@ -95,31 +90,7 @@ export function createUI(api) {
   api.onTap = () => { if ($$('.panel').some(p => !p.hidden)) closePanels(null); };
   if (!speech.ok) $$('.say-btn').forEach(b => b.hidden = true);
 
-  // ---------------------------------------------------------------
-  // The rock card (always there; ✕ makes it small)
-  // ---------------------------------------------------------------
-  ui.setCard = (html, { badge = '', badgeColor = '#e9b47c', badgeIcon = 'rock', keepScroll = false } = {}) => {
-    if (speech.isOn() && speech.root() === cardContent) speech.stop();
-    const top = cardScroll.scrollTop;
-    cardContent.innerHTML = html;
-    $('#cardBadge').innerHTML = badge ? `<i style="background:${badgeColor}">${icon(badgeIcon)}</i>${esc(badge)}` : '';
-    $('#cardBadge').style.visibility = badge ? 'visible' : 'hidden';
-    cardScroll.scrollTop = keepScroll ? top : 0;
-    return cardContent;
-  };
-  ui.cardContent = cardContent;
-  function showCard(on) {
-    card.hidden = !on; $('#cardPill').hidden = on;
-    document.body.classList.toggle('card-small', !on);
-    if (!on) speech.stop();
-    requestAnimationFrame(updateInsets);
-  }
-  ui.showCard = showCard;
-  $('#cardClose').onclick = () => showCard(false);
-  $('#cardPill').onclick = () => showCard(true);
-  $('#cardSay').onclick = () => speech.read(cardContent, $('#cardSay'));
-
-  // card parts
+  // text parts (help boxes)
   ui.part = {
     bullets: a => a && a.length ? `<ul class="bul">${a.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '',
     steps: a => a && a.length ? `<ol class="steps-list">${a.map(t => `<li>${esc(t)}</li>`).join('')}</ol>` : '',
@@ -290,8 +261,6 @@ export function createUI(api) {
     $('#fullscreenBtn').hidden = false;
     $('#fullscreenBtn').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); };
   }
-  // the rock card starts closed, so students see the 3D block first ("Show the rock card" opens it)
-  showCard(false);
   requestAnimationFrame(updateInsets);
   return ui;
 }

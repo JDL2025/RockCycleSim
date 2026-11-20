@@ -13,12 +13,10 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 | Part of the screen | What it does |
 |---|---|
 | **3D block** | Real photo textures on the ground and rock. Drag with one finger to turn it, pinch to zoom, drag with two fingers to move it. Mountains, river, delta, sea, volcano, lava flow, sedimentary layers, metamorphic rock, igneous rock and the glowing magma chamber. |
-| **Menu bar (bottom)** | The 8 steps: Weathering & Erosion, Transport & Deposition, Compaction, Cementation, Heat & Pressure, Melting, Cooling Underground, Eruption. Tap one to watch the grain move. When the site opens, Weathering & Erosion glows green with a “Start here” tag. |
+| **Menu bar (bottom)** | The 8 steps: Weathering & Erosion, Transport & Deposition, Compaction, Cementation, Heat & Pressure, Melting, Cooling Underground, Eruption. Tap one to watch the grain move. When the site opens, Weathering & Erosion glows green with a “Start here” tag. After each step, the next step along the main path (menu order; after Eruption it goes back to Weathering & Erosion) glows green with a “Next” tag. |
 | **Message at the top** | Each step’s words appear as the animation reaches them, and **all of them stay on the screen** after the animation ends, until the next step starts. |
-| **Color flashes** | Cementation, Heat & Pressure, Cooling Underground and Eruption end with a big color flash: “Sedimentary rock has now been made!”, “Metamorphic rock has now been made!”, “Igneous rock has been created!” |
+| **Color flashes** | Cementation, Heat & Pressure, Cooling Underground and Eruption end with a big color flash: “Sedimentary rock has now been made!” (green), “Metamorphic rock has now been made!” (purple), “Igneous rock has been created!” (red). The glowing grain turns the same color, so students can see the rock type change. |
 | **Camera moves** | Transport & Deposition turns the block so the river and ocean show. Cementation zooms in to the buried layers, shows water seeping down with arrows, glows gold as the minerals glue the sediment, then zooms back out. |
-| **A Rock’s Journey** | Students number all 8 steps in any order they choose, then tap **Play Journey**. The steps play in that exact order (“Step 3 of 8”), with a short pause between steps for reading. Confetti at the end. If a step starts from a different kind of rock, the grain hops there first. |
-| **Rock card** | Closed when the site opens (“Show the rock card” opens it). Shows what the grain is now, Where, Temperature, the step’s words, How long it takes, Energy, and “What can happen next?”. **Read to me** reads it aloud. Pause / Speed / Replay are under the card. |
 | **Left side** | Labels on/off, Music, Help (How to explore, “Is this the real size?”, About & credits). |
 
 ## Updating later
@@ -29,9 +27,9 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 
 | To change… | Edit this file |
 |---|---|
-| Any words students read (the message at the top, the color flashes, the menu-bar buttons, the rock card, the journey directions, the not-to-scale note) | `js/data/rockcycle.js` |
+| Any words students read (the message at the top, the color flashes, the menu-bar buttons, the “Start here” / “Next” tags, the not-to-scale note) | `js/data/rockcycle.js` |
 | Which word is yellow | `js/data/rockcycle.js` (put `*stars*` around the word) |
-| The pause between journey steps | `js/data/rockcycle.js` (`pauseSeconds`) |
+| The grain colors (and flash colors) | `js/data/rockcycle.js` (`rocks`) |
 | Songs, song names, music on/off at start | `js/data/music.js` |
 | Label names on the block (Mountains, Volcano…) | `js/scene.js` (search for `LABELS`) |
 
@@ -60,7 +58,7 @@ js/main.js            starts everything
 js/scene.js           the 3D block, effects, labels, touch controls
 js/glsl.js            shaders (ground, rock faces, sea, river)
 js/geo.js             the shape of the land and the grain's paths
-js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, journey, card
+js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, Next tags
 js/app.js             panels, pop-ups, celebration, music, Read to me
 js/speech.js          Read to me
 js/icons.js           icons

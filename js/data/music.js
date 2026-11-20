@@ -12,7 +12,7 @@
    ===================================================================== */
 window.MUSIC = {
   on: true,
-  song: 'wallpaper',   // Gentle Erosion
+  song: 'pamgaea',     // Volcano Drums
   volume: 0.6,
   songs: [
     { id: 'pamgaea', name: 'Volcano Drums', original: 'Pamgaea', mood: 'Upbeat drums', file: 'music/pamgaea.m4a' },
