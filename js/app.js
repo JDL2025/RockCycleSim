@@ -21,23 +21,27 @@ export function createUI(api) {
   // ---------------------------------------------------------------
   // HUD line and banner
   // ---------------------------------------------------------------
-  const HUD_DEFAULT = 'Pick a process in the menu bar below.';
+  const HUD_DEFAULT = 'Tap a step in the menu bar below.';
   ui.setHud = t => { $('#hudLine').textContent = t ?? HUD_DEFAULT; };
   let bannerEl = null, bannerTimer = 0;
-  ui.banner = (html, ms = 0) => {
+  // the message at the top of the screen. ms = 0 means it stays until the next message.
+  ui.banner = (html, ms = 0, cls = '') => {
     clearTimeout(bannerTimer);
-    if (!html) { if (bannerEl) bannerEl.remove(); bannerEl = null; return; }
-    if (!bannerEl) { bannerEl = document.createElement('div'); bannerEl.className = 'banner'; document.body.appendChild(bannerEl); }
+    if (html === null) { if (bannerEl) bannerEl.remove(); bannerEl = null; return; }
+    if (!bannerEl) { bannerEl = document.createElement('div'); document.body.appendChild(bannerEl); }
+    bannerEl.className = 'banner' + (cls ? ' ' + cls : '');
     bannerEl.innerHTML = html;
     placeBanner();
     if (ms) bannerTimer = setTimeout(() => ui.banner(null), ms);
     return bannerEl;
   };
+  ui.placeBanner = () => placeBanner();
   function placeBanner() {
     if (!bannerEl) return;
     let L = insets.l; const R = innerWidth - insets.r;
-    const hud = $('#hud').getBoundingClientRect(), bTop = bannerEl.getBoundingClientRect().top;
-    if (bTop < hud.bottom) L = Math.max(L, $('#appTitle').getBoundingClientRect().right + 14);   // stay clear of the title
+    const hud = $('#hud').getBoundingClientRect();
+    if (ui.isSheet()) bannerEl.style.top = (hud.bottom + 8) + 'px';              // tall screens: below the title
+    else { bannerEl.style.top = ''; L = Math.max(L, $('#appTitle').getBoundingClientRect().right + 14); }   // wide screens: beside the title
     bannerEl.style.left = ((L + R) / 2) + 'px';
     bannerEl.style.maxWidth = Math.max(240, Math.min(600, R - L - 24)) + 'px';
   }
@@ -107,7 +111,6 @@ export function createUI(api) {
   function showCard(on) {
     card.hidden = !on; $('#cardPill').hidden = on;
     document.body.classList.toggle('card-small', !on);
-    store.set('rce-card', on ? 'open' : 'small');
     if (!on) speech.stop();
     requestAnimationFrame(updateInsets);
   }
@@ -126,14 +129,37 @@ export function createUI(api) {
   // ---------------------------------------------------------------
   // A burst of light at a spot on the screen
   // ---------------------------------------------------------------
-  ui.burst = (x, y, green = true) => {
-    const b = document.createElement('div'); b.className = 'pop-burst';
+  ui.burst = (x, y, green = true, color = '') => {
+    const b = document.createElement('div'); b.className = 'pop-burst' + (color ? ' big' : '');
     b.style.transform = `translate(${x}px, ${y}px)`;
+    if (color) b.style.setProperty('--bc', color);
     let h = `<div class="ring ${green ? 'green' : ''}"></div><div class="ring r2 ${green ? 'green' : ''}"></div>`;
     for (let i = 0; i < 12; i++) h += `<div class="spark" style="--a:${i * 30}deg;--d:${70 + (i % 3) * 22}px"></div>`;
     b.innerHTML = h; document.body.appendChild(b);
     setTimeout(() => b.remove(), 1600);
   };
+
+  // ---------------------------------------------------------------
+  // Color flash: "Igneous rock has been created!" (x, y = the grain on screen)
+  // ---------------------------------------------------------------
+  let flareEls = [];
+  ui.flare = (text, color = '#ffb74d', x = innerWidth / 2, y = innerHeight / 2) => {
+    flareEls.forEach(e => e.remove()); flareEls = [];
+    const flash = document.createElement('div'); flash.className = 'flare-flash';
+    flash.style.background = `radial-gradient(circle at ${x}px ${y}px, ${color}cc 0%, ${color}55 22%, transparent 60%)`;
+    const msg = document.createElement('div'); msg.className = 'flare-msg';
+    msg.style.setProperty('--fc', color);
+    msg.style.left = ((insets.l + innerWidth - insets.r) / 2) + 'px';
+    msg.style.top = Math.max(insets.t + 40, Math.min(innerHeight * 0.42, y - 150)) + 'px';
+    msg.innerHTML = `<span>${esc(text)}</span>`;
+    document.body.append(flash, msg); flareEls = [flash, msg];
+    ui.burst(x, y, false, color);
+    setTimeout(() => ui.burst(x, y, false, '#ffffff'), 250);
+    setTimeout(() => { flash.remove(); }, 1500);
+    setTimeout(() => { msg.classList.add('out'); }, 3400);
+    setTimeout(() => { msg.remove(); }, 4100);
+  };
+  ui.clearFlare = () => { flareEls.forEach(e => e.remove()); flareEls = []; };
 
   // ---------------------------------------------------------------
   // Pop-up box in the middle of the screen (students tap the button to close it)
@@ -264,8 +290,8 @@ export function createUI(api) {
     $('#fullscreenBtn').hidden = false;
     $('#fullscreenBtn').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); };
   }
-  if (store.get('rce-card') === 'small') showCard(false);
-  if (store.get('rce-help-seen') !== '1' && !/[?&]nohelp/.test(location.search)) setTimeout(() => openPanel('help'), 700);
+  // the rock card starts closed, so students see the 3D block first ("Show the rock card" opens it)
+  showCard(false);
   requestAnimationFrame(updateInsets);
   return ui;
 }

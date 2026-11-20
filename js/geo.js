@@ -110,14 +110,15 @@ function surfLine(a, b) {                           // along the ground from a t
 
 export const SEAX = 2.95, DEPOSIT = Fp(SEAX, Hf(SEAX) - 0.05);
 export const LOC = {                              // where each kind of rock waits
-  magma: Fp(CHM.x, CHM.y),
-  granite: Fp(PLU.x, PLU.y),
-  basalt: S(LAV0 + LAVL - 0.08, lavaZ(LAVL - 0.08)),
+  surface: S(-2.0, ZF - 0.45),                    // rock on the mountainside (the start)
   sediment: riverPt(-1.4),
   deposit: DEPOSIT,
-  sandstone: Fp(2.75, -0.95),
-  gneiss: Fp(-1.15, gneissY(-1.15)),
-  exposed: S(-2.0, ZF - 0.45)
+  compacted: Fp(SEAX, -0.95),
+  sedrock: Fp(SEAX, -0.95),
+  meta: Fp(SEAX, gneissY(SEAX)),
+  magma: Fp(CHM.x, CHM.y),
+  ignIn: Fp(PLU.x, PLU.y),
+  ignOut: S(LAV0 + LAVL - 0.08, lavaZ(LAVL - 0.08))
 };
 
 function toFace(p) {                                // from the ground near the front, onto the cut face
@@ -152,6 +153,7 @@ export function makePath(k, pos) {
       const x0 = Math.max(RIV0 + 0.05, x), o = [p.slice()], end = SHORE + 0.1;
       const n = Math.max(4, Math.ceil((end - x0) / 0.04));
       for (let i = 1; i <= n; i++) o.push(riverPt(x0 + (end - x0) * i / n));
+      o.seaI = o.length - 1;
       const a = o[o.length - 1], zf = ZF - 0.04;
       for (let i = 1; i <= 16; i++) {               // out past the delta, sinking to the sea floor
         const t = i / 16, xx = a[0] + (SEAX - a[0]) * t, zz = a[2] + (riverZ(SHORE) - a[2]) * t;
@@ -160,9 +162,10 @@ export function makePath(k, pos) {
       const b = o[o.length - 1];
       for (let i = 1; i <= 24; i++) { const zz = b[2] + (zf - b[2]) * i / 24; o.push([SEAX, H(SEAX, zz) + 0.035, zz]); }
       o.push(DEPOSIT.slice());
-      return o;
+      const out = o.slice(); out.seaI = o.seaI; return out;
     }
     case 'compact': { const f = toFace(p), e = f[f.length - 1]; return join(f, seg(e, Fp(e[0], -0.95))); }
+    case 'cement': return [p.slice(), p.slice()];     // the grain stays put while water seeps past it
     case 'heatp': {
       const f = toFace(p), e = f[f.length - 1];
       const pe = ((e[0] - PLU.x) / PLU.rx) ** 2 + ((e[1] - PLU.y) / PLU.ry) ** 2;
@@ -176,7 +179,7 @@ export function makePath(k, pos) {
       const low = Fp((d1[0] + tgt[0]) / 2, Math.min(d1[1], tgt[1]) - 0.12);
       return join(f, seg(e, d1), seg(d1, low), seg(low, tgt));
     }
-    case 'intrude': {
+    case 'cool': {
       const a = Fp(DYKE[0][0], DYKE[0][1]), b = Fp(DYKE[1][0], DYKE[1][1]);
       return join(seg(p, a), seg(a, b), seg(b, Fp(PLU.x, PLU.y)));
     }
@@ -188,10 +191,6 @@ export function makePath(k, pos) {
       const out = o.concat(surfLine(vent, S(LAV0 + 0.05, lavaZ(0.05))).slice(1));
       for (let j = 1; j <= 56; j++) { const s = 0.05 + (LAVL - 0.13) * j / 56; out.push(S(LAV0 + s, lavaZ(s))); }
       out.ventI = ventI; return out;
-    }
-    case 'uplift': {
-      const f = toFace(p), e = f[f.length - 1], xu = e[0] > COAST0 - 0.1 ? COAST0 - 0.15 : e[0];
-      return join(f, seg(e, Fp(xu, Hf(xu) - 0.03)));
     }
   }
   return [p];

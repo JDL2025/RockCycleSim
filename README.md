@@ -12,16 +12,14 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 
 | Part of the screen | What it does |
 |---|---|
-| **3D block** | Real photo textures on the ground and rock. Drag with one finger to turn it, pinch to zoom, drag with two fingers to move it. Mountains, river, delta, sea, volcano, lava flow, sedimentary layers, metamorphic rock, granite and the glowing magma chamber. |
-| **Menu bar (bottom)** | The 8 processes: Weathering & erosion, Transport & deposition, Compaction & cementation, Heat & pressure, Melting, Cooling underground, Eruption (lava cools), Uplift. Tap one to watch the grain move. Processes that can happen **next** glow green with a “Next” tag. |
-| **A Rock’s Journey** | A pop-up, then a surprise 8-step trip around the rock cycle. Each step is listed on the card. Confetti at the end. |
-| **Rock card (right, or bottom on a tall screen)** | “The grain is now …”, Where, Temperature, the process (short sentences), How long it takes, Energy (Sun, Earth’s hot inside, gravity, plate motion), and “What can happen next?” buttons. **Read to me** reads it aloud. ✕ makes it small. |
-| **Pause / Speed / Replay** | Under the card. Speed goes 1× → 2× → ½×. |
-| **View (left)** | Cross-section, Tilted, From above, Labels on/off, Music, Help. |
-| **Help** | How to explore, “Is this the real size?” (the not-to-scale note), About & credits. |
-| **Effects** | Rain cloud (weathering), sediment in the river, arrows pressing down (compaction), squeezing arrows and a heat glow (heat & pressure), glowing melt, cooling sparkles, lava fountain + ash cloud + a glowing lava flow that cools (eruption), a rising column (uplift). |
-
-If a student taps a process that can’t happen to the rock right now, the grain jumps to a rock it can happen to, and a message says so.
+| **3D block** | Real photo textures on the ground and rock. Drag with one finger to turn it, pinch to zoom, drag with two fingers to move it. Mountains, river, delta, sea, volcano, lava flow, sedimentary layers, metamorphic rock, igneous rock and the glowing magma chamber. |
+| **Menu bar (bottom)** | The 8 steps: Weathering & Erosion, Transport & Deposition, Compaction, Cementation, Heat & Pressure, Melting, Cooling Underground, Eruption. Tap one to watch the grain move. When the site opens, Weathering & Erosion glows green with a “Start here” tag. |
+| **Message at the top** | Each step’s words appear as the animation reaches them, and **all of them stay on the screen** after the animation ends, until the next step starts. |
+| **Color flashes** | Cementation, Heat & Pressure, Cooling Underground and Eruption end with a big color flash: “Sedimentary rock has now been made!”, “Metamorphic rock has now been made!”, “Igneous rock has been created!” |
+| **Camera moves** | Transport & Deposition turns the block so the river and ocean show. Cementation zooms in to the buried layers, shows water seeping down with arrows, glows gold as the minerals glue the sediment, then zooms back out. |
+| **A Rock’s Journey** | Students number all 8 steps in any order they choose, then tap **Play Journey**. The steps play in that exact order (“Step 3 of 8”), with a short pause between steps for reading. Confetti at the end. If a step starts from a different kind of rock, the grain hops there first. |
+| **Rock card** | Closed when the site opens (“Show the rock card” opens it). Shows what the grain is now, Where, Temperature, the step’s words, How long it takes, Energy, and “What can happen next?”. **Read to me** reads it aloud. Pause / Speed / Replay are under the card. |
+| **Left side** | Labels on/off, Music, Help (How to explore, “Is this the real size?”, About & credits). |
 
 ## Updating later
 
@@ -31,8 +29,9 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 
 | To change… | Edit this file |
 |---|---|
-| Any words students read (rock names, Where, Temperature, process sentences, How long, Energy, the journey pop-up, the not-to-scale note) | `js/data/rockcycle.js` |
-| Which processes can happen next to each rock | `js/data/rockcycle.js` (`next`) |
+| Any words students read (the message at the top, the color flashes, the menu-bar buttons, the rock card, the journey directions, the not-to-scale note) | `js/data/rockcycle.js` |
+| Which word is yellow | `js/data/rockcycle.js` (put `*stars*` around the word) |
+| The pause between journey steps | `js/data/rockcycle.js` (`pauseSeconds`) |
 | Songs, song names, music on/off at start | `js/data/music.js` |
 | Label names on the block (Mountains, Volcano…) | `js/scene.js` (search for `LABELS`) |
 
@@ -40,11 +39,10 @@ Each data file starts with a plain-English guide. On GitHub, open the file, tap 
 
 ## Things to know
 
-- **Not to scale.** The magma chamber is really a few km (a few miles) down, and metamorphic rock usually forms 10–30 km (6–19 miles) deep. One magma chamber feeds both the granite and the volcano, to keep it simple. This is in Help → “Is this the real size?”.
-- **Saved on each iPad:** music on/off, the song, whether the help box was seen, and whether the card is small. Nothing else is saved, and nothing leaves the iPad.
+- **Not to scale.** The magma chamber is really a few km (a few miles) down, and metamorphic rock usually forms 10–30 km (6–19 miles) deep. One magma chamber feeds both the igneous rock underground and the volcano, to keep it simple. This is in Help → “Is this the real size?”.
+- **Saved on each iPad:** music on/off and the song. Nothing else is saved, and nothing leaves the iPad.
 - **No internet services.** Everything (3D engine, fonts, textures, music) is in this repository, so school filters shouldn’t block it.
 - **Sound:** music starts on the first tap (iPads require a tap). It pauses while Read to me talks.
-- `?nohelp` at the end of the address skips the first-time help box.
 
 ## Credits
 
@@ -62,7 +60,7 @@ js/main.js            starts everything
 js/scene.js           the 3D block, effects, labels, touch controls
 js/glsl.js            shaders (ground, rock faces, sea, river)
 js/geo.js             the shape of the land and the grain's paths
-js/cycle.js           the rock cycle: processes, card, journey
+js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, journey, card
 js/app.js             panels, pop-ups, celebration, music, Read to me
 js/speech.js          Read to me
 js/icons.js           icons

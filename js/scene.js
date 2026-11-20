@@ -262,14 +262,24 @@ export function createScene(container) {
   let popT = 1;
 
   // ---------- effects the processes can turn on ----------
-  let fx = { arrows: null, column: null, cloud: null, heat: 0, heatColor: 0xff7a20, sparkle: 0, eruptT: -1, lavaT: -1 };
+  // water seeping down through buried sediment (cementation)
+  const SEEPN = 46, seepPos = new Float32Array(SEEPN * 3), seepSeed = [];
+  for (let i = 0; i < SEEPN; i++) seepSeed.push([(Math.random() - 0.5) * 0.62, Math.random(), 0.6 + Math.random() * 0.5]);
+  const seepGeo = new THREE.BufferGeometry(); seepGeo.setAttribute('position', new THREE.BufferAttribute(seepPos, 3));
+  const seepMat = new THREE.PointsMaterial({ map: glowT, color: 0x8fd8ff, size: 0.08, transparent: true, opacity: 0, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending });
+  const seep = new THREE.Points(seepGeo, seepMat); seep.renderOrder = 11; seep.frustumCulled = false; block.add(seep);
+  const seepArrows = []; for (let i = 0; i < 3; i++) { const a = sprite(arrowT, 0x7fd3ff, { depthTest: false, order: 11, opacity: 0 }); a.material.rotation = Math.PI; a.scale.set(0.12, 0.12, 1); block.add(a); seepArrows.push(a); }
+  const glue = sprite(glowT, 0xffd54f, { add: true, depthTest: false, order: 9, opacity: 0 }); glue.scale.set(0.7, 0.42, 1); block.add(glue);
+  let fx = { arrows: null, column: null, cloud: null, heat: 0, heatColor: 0xff7a20, sparkle: 0, sparkColor: 0xcfeeff, seep: 0, glue: 0, eruptT: -1, lavaT: -1 };
   api.fx = {
-    clear() { fx.arrows = null; fx.column = null; fx.cloud = null; fx.heat = 0; fx.sparkle = 0; },
+    clear() { fx.arrows = null; fx.column = null; fx.cloud = null; fx.heat = 0; fx.sparkle = 0; fx.seep = 0; fx.glue = 0; },
     cloud(p) { fx.cloud = p; },                     // p = point under the cloud, or null
     arrows(kind, p) { fx.arrows = kind ? { kind, p } : null; },   // 'down', 'squeeze', 'up'
     column(p) { fx.column = p; },
     heat(amount, color = 0xff7a20) { fx.heat = amount; fx.heatColor = color; },
-    sparkle(amount) { fx.sparkle = amount; },
+    sparkle(amount, color = 0xcfeeff) { fx.sparkle = amount; fx.sparkColor = color; },
+    seep(amount) { fx.seep = amount; },          // water trickling down past the grain
+    glue(amount) { fx.glue = amount; },          // minerals gluing the sediment: a golden glow
     erupt(frontSpeed) { fx.eruptT = 0; fx.lavaT = 0; U.uFront.value = frontSpeed; },
     resetLava() { fx.eruptT = -1; fx.lavaT = -1; U.uLava.value = 999; }
   };
@@ -280,7 +290,7 @@ export function createScene(container) {
     ['mtn', 'Mountains', [-2.5, 2.05, -0.25], false, 1], ['vol', 'Volcano', [G.VX + 0.05, G.Hf(G.VX) + 0.45, G.ZF - 0.35], false, 1],
     ['riv', 'River', [-0.6, 0.35, G.riverZ(-0.6)], false, 2], ['dlt', 'Delta', [G.MOUTH[0] + 0.32, 0.22, G.MOUTH[1] + 0.32], false, 3],
     ['sea', 'Sea', [3.55, 0.3, 0.55], false, 2], ['mag', 'Magma chamber', [G.CHM.x + 0.1, G.CHM.y - 0.05, G.ZF], true, 1],
-    ['gra', 'Granite (igneous)', [G.PLU.x, G.PLU.y, G.ZF], true, 1], ['met', 'Metamorphic rock', [2.9, -2.2, G.ZF], true, 1],
+    ['gra', 'Igneous rock', [G.PLU.x, G.PLU.y, G.ZF], true, 1], ['met', 'Metamorphic rock', [2.9, -2.2, G.ZF], true, 1],
     ['sed', 'Sedimentary layers', [2.55, -0.72, G.ZF], true, 1], ['lav', 'Lava layers', [G.VX + 0.66, 0.42, G.ZF], true, 2]
   ];
   api.labelText = {}; for (const l of LABELS) api.labelText[l[0]] = l[1];
@@ -320,7 +330,7 @@ export function createScene(container) {
   const view = { yaw: VIEWS.tilt.yaw, pitch: VIEWS.tilt.pitch, k: 1, target: TARGET0.clone() };
   api.view = view;
   let W = 1, H = 1;
-  // how far away the camera must be so the whole block fits in the free space (checked for all 3 views)
+  // how far away the camera must be so the whole block fits in the free space (opening view)
   const CORNERS = [];
   for (const x of [G.XL, G.XR]) for (const z of [-G.ZF, G.ZF]) for (const y of [G.YB, 0.2]) CORNERS.push(new THREE.Vector3(x, y, z));
   CORNERS.push(new THREE.Vector3(G.MTN, 1.85, 0), new THREE.Vector3(G.MTN, 1.6, G.ZF), new THREE.Vector3(G.MTN, 1.6, -G.ZF));
@@ -342,12 +352,28 @@ export function createScene(container) {
     const key = aw + 'x' + ah;
     if (fitCache && fitCache.key === key) return fitCache.d;
     let d = 6;
-    for (const v of Object.values(VIEWS)) { let lo = 4, hi = 80; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (fits(v, m, aw, ah)) hi = m; else lo = m; } d = Math.max(d, hi); }
+    for (const v of [VIEWS.tilt]) { let lo = 4, hi = 80; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (fits(v, m, aw, ah)) hi = m; else lo = m; } d = Math.max(d, hi); }
     fitCache = { key, d }; return d;
   }
   api.fitDist = fitDist;
   const K_MIN = 0.2, K_MAX = 1.7;
   let viewTween = null;
+  api.getView = () => ({ yaw: view.yaw, pitch: view.pitch, k: view.k, target: view.target.toArray() });
+  // fly the camera to a view: { yaw, pitch, k, target: [x, y, z] }
+  api.flyTo = (v, ms = 1400) => {
+    const from = { yaw: view.yaw, pitch: view.pitch, k: view.k, t: view.target.clone() };
+    const to = { yaw: v.yaw ?? view.yaw, pitch: v.pitch ?? view.pitch, k: v.k ?? view.k, t: v.target ? new THREE.Vector3(...v.target) : view.target.clone() };
+    while (to.yaw - from.yaw > Math.PI) to.yaw -= 2 * Math.PI; while (from.yaw - to.yaw > Math.PI) to.yaw += 2 * Math.PI;
+    rotV.y = rotV.p = 0; zoomV = 0;
+    const t0 = performance.now();
+    viewTween = now => {
+      const t = clamp((now - t0) / ms, 0, 1), e = ease(t);
+      view.yaw = lerp(from.yaw, to.yaw, e); view.pitch = lerp(from.pitch, to.pitch, e); view.k = lerp(from.k, to.k, e);
+      view.target.lerpVectors(from.t, to.t, e);
+      if (t >= 1) viewTween = null;
+    };
+    lastInput = performance.now(); api.requestRender();
+  };
   api.setView = (name, ms = 1000) => {
     const v = VIEWS[name]; if (!v) return;
     const from = { yaw: view.yaw, pitch: view.pitch, k: view.k, t: view.target.clone() };
@@ -502,7 +528,23 @@ export function createScene(container) {
     halo.material.opacity += ((fx.heat > 0 ? 0.55 + 0.25 * Math.sin(ambient * 7) : 0) * Math.min(1, fx.heat) - halo.material.opacity) * Math.min(1, rdt * 6);
     halo.material.color.setHex(fx.heatColor); halo.position.copy(gp); halo.scale.setScalar(0.7 + 0.35 * Math.min(1, fx.heat));
     U.uHeat.value += ((fx.heatColor === 0xff7a20 || fx.heatColor === 0xff5010 ? fx.heat : 0) * 0.6 - U.uHeat.value) * Math.min(1, rdt * 3);
+    seepMat.opacity += (Math.min(1, fx.seep) * 0.95 - seepMat.opacity) * Math.min(1, rdt * 5);
+    if (seepMat.opacity > 0.01) {
+      for (let i = 0; i < SEEPN; i++) {
+        const r = seepSeed[i]; r[1] = (r[1] + sdt * 0.22 * r[2]) % 1;
+        seepPos[i * 3] = gp.x + r[0] + 0.02 * Math.sin(r[1] * 12 + i); seepPos[i * 3 + 1] = gp.y + 0.62 - r[1] * 0.95; seepPos[i * 3 + 2] = G.FZ + 0.03;
+      }
+      seepGeo.attributes.position.needsUpdate = true;
+    }
+    seepArrows.forEach((a, i) => {
+      a.material.opacity = seepMat.opacity * 0.95;
+      const s = ((ambient * 0.35 + i / 3) % 1);
+      a.position.set(gp.x + (i - 1) * 0.2, gp.y + 0.5 - s * 0.6, G.FZ + 0.05);
+    });
+    glue.material.opacity += ((fx.glue > 0 ? Math.min(1, fx.glue) * (0.7 + 0.25 * Math.sin(ambient * 5)) : 0) - glue.material.opacity) * Math.min(1, rdt * 4);
+    glue.position.set(gp.x, gp.y, G.FZ + 0.04); glue.scale.set(0.55 + 0.25 * Math.min(1, fx.glue), 0.32 + 0.14 * Math.min(1, fx.glue), 1);
     for (const s of sparks) {
+      s.material.color.setHex(fx.sparkColor);
       const target = fx.sparkle > 0 ? (0.5 + 0.5 * Math.sin(ambient * 6 + s.userData.p)) * fx.sparkle : 0;
       s.material.opacity += (target - s.material.opacity) * Math.min(1, rdt * 8);
       s.userData.a += rdt * 1.2; const r = s.userData.r;

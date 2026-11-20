@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Rock Cycle Explorer</title>
-  <meta name="description" content="Watch a grain of rock travel through a 3D cutaway of Earth's crust: weathering, erosion, deposition, compaction, heat and pressure, melting, cooling, eruption and uplift.">
+  <meta name="description" content="Watch a grain of rock travel through a 3D cutaway of Earth's crust: weathering and erosion, transport and deposition, compaction, cementation, heat and pressure, melting, cooling underground and eruption.">
   <meta name="theme-color" content="#141a26">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,18 +21,13 @@
   <!-- Top-left: title + what to do -->
   <header class="hud" id="hud">
     <h1 id="appTitle">Rock Cycle Explorer</h1>
-    <p class="hud-line" id="hudLine">Pick a process in the menu bar below.</p>
+    <p class="hud-line" id="hudLine">Tap a step in the menu bar below.</p>
   </header>
 
   <div class="loading" id="loading">Loading the rocks…</div>
 
-  <!-- Left: how to look at the block -->
-  <nav class="rail" id="rail" aria-label="View">
-    <span class="rail-title">View</span>
-    <button class="rail-btn" data-view="front" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10c3-2 5 1 9-1s6-2 9 0M3 14.5h18"/></svg><span>Cross-section</span></button>
-    <button class="rail-btn" data-view="tilt" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M3 9l6-4h12l-6 4z"/><path d="M3 9v10h12V9M15 19l6-4V5"/></svg><span>Tilted</span></button>
-    <button class="rail-btn" data-view="top" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 3v7M9 7l3 3 3-3"/><rect x="4" y="13" width="16" height="8" rx="1.5"/></svg><span>From above</span></button>
-    <i class="rail-sep"></i>
+  <!-- Left: labels, music, help -->
+  <nav class="rail" id="rail" aria-label="Tools">
     <button class="rail-btn" id="labelsBtn" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-7 7z"/><circle cx="7.5" cy="8" r="1.5"/></svg><span>Labels</span></button>
     <button class="rail-btn" id="musicBtn" data-panel="music"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span>Music</span></button>
     <button class="rail-btn" data-panel="show"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Help</span></button>
@@ -96,11 +91,10 @@
       </ul>
       <h3 class="group-title">What to do</h3>
       <ol class="steps-list">
-        <li>Tap a process in the menu bar at the bottom of the screen.</li>
+        <li>Tap a step in the menu bar at the bottom of the screen.</li>
         <li>Watch the glowing grain of rock move.</li>
-        <li>Read the card to see what the rock is now.</li>
-        <li>Green buttons show what can happen next.</li>
-        <li>Tap <b>A Rock’s Journey</b> for a surprise trip around the rock cycle.</li>
+        <li>Read the words at the top of the screen.</li>
+        <li>Tap <b>A Rock’s Journey</b> to pick your own order of steps.</li>
       </ol>
       <button class="wide-btn" data-close>Start exploring</button>
     </div>

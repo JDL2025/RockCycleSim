@@ -484,3 +484,62 @@ button:focus-visible, input:focus-visible + span { outline: 3px solid var(--suns
   .dock-btn.proc svg, .dock-btn.journey svg { width: 22px; height: 22px; }
   .hud h1 { font-size: 30px; }
 }
+
+/* ---------- message at the top: lines build up and stay ---------- */
+.banner.steps { padding: 12px 22px 13px; text-align: center; max-width: 640px; }
+.banner.steps .b-step { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 3px; }
+.banner.steps p { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.4; color: #f3f6fb; animation: lineIn .6s ease-out both; }
+.banner.steps p + p { margin-top: 6px; }
+.banner.steps p b { color: var(--butterscotch); font-weight: 800; }
+.banner.steps .y { color: #ffd84d; font-weight: 800; }
+.banner.steps p.made { color: #ffd84d; font-weight: 800; font-size: 20px; }
+@keyframes lineIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- color flash when a new kind of rock is made ---------- */
+.flare-flash { position: fixed; inset: 0; z-index: 14; pointer-events: none; mix-blend-mode: screen; animation: flareFlash 1.4s ease-out forwards; }
+@keyframes flareFlash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+.flare-msg { position: fixed; z-index: 15; transform: translateX(-50%); pointer-events: none; }
+.flare-msg span {
+  display: block; padding: 12px 30px 14px; border-radius: 22px; white-space: nowrap;
+  font-family: 'Big Shoulders Display', 'Atkinson Hyperlegible', sans-serif; font-weight: 800; font-size: 46px; line-height: 1.05; letter-spacing: .01em;
+  color: #fff; background: rgba(14,18,27,.82); border: 3px solid var(--fc);
+  text-shadow: 0 0 18px var(--fc), 0 2px 4px rgba(0,0,0,.7);
+  box-shadow: 0 0 40px var(--fc), 0 14px 36px rgba(0,0,0,.5);
+  animation: flareIn .7s cubic-bezier(.2, 1.6, .4, 1) both, flarePulse 1.2s ease-in-out .7s 2;
+}
+.flare-msg.out span { animation: flareOut .6s ease-in forwards; }
+@keyframes flareIn { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes flarePulse { 50% { box-shadow: 0 0 70px var(--fc), 0 14px 36px rgba(0,0,0,.5); } }
+@keyframes flareOut { to { transform: scale(.9) translateY(-14px); opacity: 0; } }
+.pop-burst.big .ring { border-color: var(--bc); box-shadow: 0 0 30px var(--bc), inset 0 0 20px var(--bc); width: 160px; height: 160px; left: -80px; top: -80px; }
+.pop-burst.big .spark { background: #fff; box-shadow: 0 0 12px 4px var(--bc); }
+@media (max-width: 760px) { .flare-msg span { font-size: 30px; white-space: normal; text-align: center; } }
+
+/* ---------- "Start here" on the first step ---------- */
+.dock-btn.proc.start { background: rgba(127,224,160,.13); box-shadow: inset 0 0 0 2px rgba(127,224,160,.8), 0 0 16px rgba(127,224,160,.35); animation: nextGlow 2s ease-in-out infinite; }
+.dock-btn.proc.start .next-tag { display: block; white-space: nowrap; right: 50%; transform: translateX(50%); }
+
+/* ---------- A Rock's Journey: pick the order ---------- */
+.modal.jpick { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; text-align: left; }
+.jpick h2 { text-align: center; }
+.jpick .steps-list { margin: 6px 0 12px; }
+.jpick .steps-list li { font-size: 17px; }
+.jgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 6px 0 12px; }
+.jstep {
+  display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 6px 12px; border-radius: 14px; cursor: pointer;
+  border: 2px solid var(--line); background: rgba(255,255,255,.05); color: var(--ink); font-weight: 700; font-size: 17px; text-align: left;
+}
+.jstep svg { width: 28px; height: 28px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.jstep .jn { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.35); display: grid; place-items: center; font-size: 18px; font-weight: 800; }
+.jstep span.jt { flex: 1; }
+.jstep.picked { border-color: var(--butterscotch); background: rgba(233,180,124,.16); }
+.jstep.picked .jn { border: 0; background: var(--butterscotch); color: var(--dusk); }
+.jorder { min-height: 26px; margin: 0 0 12px; font-size: 16px; color: var(--ink-dim); }
+.jorder b { color: var(--ink); }
+.jbtns { display: flex; gap: 10px; }
+.jbtns button { flex: 1; min-height: 54px; border-radius: 16px; font-size: 18px; font-weight: 800; cursor: pointer; border: 0; }
+.jbtns .ghost { background: rgba(255,255,255,.08); color: var(--ink); border: 1px solid var(--line); }
+.jbtns .go { background: var(--butterscotch); color: var(--dusk); }
+.jbtns .go:disabled { opacity: .45; cursor: default; }
+.jpick .close { position: absolute; top: 12px; right: 12px; }
+@media (max-width: 560px) { .jgrid { grid-template-columns: 1fr; } }

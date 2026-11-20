@@ -10,12 +10,7 @@ if (!ok) {
   const ui = createUI(api);
   window.RCE = { api, ui };
 
-  // view buttons and labels
-  const viewBtns = [...document.querySelectorAll('[data-view]')];
-  viewBtns.forEach(b => b.onclick = () => {
-    api.setView(b.dataset.view);
-    viewBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  });
+  // labels on/off
   const lb = document.getElementById('labelsBtn');
   lb.onclick = () => { const on = !api.labelsOn(); api.setLabels(on); lb.setAttribute('aria-pressed', String(on)); };
 
