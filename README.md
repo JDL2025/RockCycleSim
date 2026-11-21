@@ -19,6 +19,14 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 | **Camera moves** | Transport & Deposition turns the block so the river and ocean show. Cementation zooms in to the buried layers, shows water seeping down with arrows, glows gold as the minerals glue the sediment, then zooms back out. |
 | **Left side** | Labels on/off, Music, Help (How to explore, “Is this the real size?”, About & credits). |
 
+## Quizzes
+
+- **Rock Cycle Quiz (8 questions):** the **Quiz** button at the end of the menu bar. After Eruption, the green “Next” tag points to it.
+- **Sun Energy Quiz and Earth’s Heat Quiz (3 questions each):** the **Take the Quiz** button at the end of each Energy story.
+- Students tap an answer and find out right away. A wrong answer explains why it’s wrong, and they try again. A second wrong answer explains why, then shows the right answer and why it’s right.
+- The score screen counts answers that were right on the first try, and lists every question (first try / second try / missed). A perfect score plays fireworks.
+- All questions, answers and explanations are in `js/data/quizzes.js`.
+
 ## Modes (menu on the right)
 
 **Real World Rock Cycle** is the default: everything above.
@@ -47,6 +55,7 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 | Which word is yellow | `js/data/rockcycle.js` (put `*stars*` around the word) |
 | The grain colors (and flash colors) | `js/data/rockcycle.js` (`rocks`) |
 | All Energy mode words, the layer temperatures, the button words | `js/data/energy.js` |
+| Quiz questions, answers and explanations | `js/data/quizzes.js` |
 | Songs, song names, music on/off at start | `js/data/music.js` |
 | Label names on the block (Mountains, Volcano…) | `js/scene.js` (search for `LABELS`) |
 
@@ -78,12 +87,14 @@ js/geo.js             the shape of the land and the grain's paths
 js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, Next tags
 js/energy.js          Energy mode: the two stories
 js/space.js           the space scene: stars, Sun, Earth, space rocks
+js/quiz.js            the quizzes (two tries, score screen)
 js/app.js             panels, pop-ups, celebration, music, Read to me
 js/speech.js          Read to me
 js/icons.js           icons
 js/data/rockcycle.js  all the words (edit me)
 js/data/music.js      songs (edit me)
 js/data/energy.js     Energy mode words (edit me)
+js/data/quizzes.js    quiz questions (edit me)
 assets/tex/           ground and rock photo textures
 assets/fonts/, lib/, music/   fonts, Three.js, songs
 build_tools/          how the textures were made (not needed by the site)

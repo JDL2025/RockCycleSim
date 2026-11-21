@@ -48,7 +48,8 @@ export function createEnergy(api, ui, cycle, E) {
     if (!lastButtons) btn(E.continue, 'go', () => run(() => PARTS[kind][i + 1]()));
     else {
       const other = kind === 'sedimentary' ? 'igneous' : 'sedimentary';
-      btn(E.end.other[kind], 'go', () => start(other));
+      if (ui.quiz) btn((window.QUIZZES.words || {}).takeQuiz || 'Take the Quiz', 'go quiz', () => ui.quiz.open(kind));
+      btn(E.end.other[kind], ui.quiz ? 'ghost' : 'go', () => start(other));
       btn(E.end.back, 'ghost', () => setMode('real'));
     }
     box.hidden = false;
@@ -74,7 +75,7 @@ export function createEnergy(api, ui, cycle, E) {
     api.inputOn = true; api.hideLabels = false;
   }
   function setMode(m) {
-    token++; hideBox(); ui.closeModal(); ui.closePanels();
+    token++; hideBox(); ui.closeModal(); ui.closePanels(); if (ui.quiz) ui.quiz.close();
     cleanScene(); cycle.reset();
     applyModeUI(m);
     if (m === 'real') { api.setView('tilt', 1200); return; }
@@ -139,7 +140,9 @@ export function createEnergy(api, ui, cycle, E) {
       hideBox();
       await zoomOut();
       const earth = space.earth, sun = space.sun;
-      earthToday(SUN_AT.clone().sub(EARTH_AT));
+      // light from the Sun, turned a little toward the camera so students can see Earth clearly
+      earthToday(SUN_AT.clone().sub(EARTH_AT).normalize().add(new THREE.Vector3(2.8, 0.8, 6.6).normalize().multiplyScalar(0.75)));
+      space.U.uAmb.value = 0.42;
       earth.visible = true; earth.position.set(0, 0, 0); earth.scale.setScalar(0.25); space.spin.rotation.y = 2.2;
       spinSpeed = 0.05;
       sun.visible = true; sun.scale.setScalar(3.4); sun.position.set(17, 0.7, -6);

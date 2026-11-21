@@ -56,7 +56,7 @@ export function createSpeech() {
     const wasRunning = running || synth.speaking;
     stop();
     btn = button || null; curRoot = root;
-    const sel = '.kicker, h2, h3, h4, .lead, .short, .bul li, .steps-list li, .box p, .qf, .gestures li, .start-row, p.say, .legend div, .jlog li';
+    const sel = '.kicker, h2, h3, h4, .lead, .short, .bul li, .steps-list li, .box p, .qf, .gestures li, .start-row, p.say, .legend div, .jlog li, .qopt';
     queue = [];
     root.querySelectorAll(sel).forEach(el => {
       if (el.closest('.no-say, button.say-btn, figcaption')) return;

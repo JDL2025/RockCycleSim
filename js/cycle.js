@@ -22,11 +22,20 @@ export function createCycle(api, ui, D) {
 
   // ---------- the menu bar ----------
   const dock = $('#dock');
-  dock.innerHTML = ORDER.map(k => `<button class="dock-btn proc" data-p="${k}">${icon('p_' + k)}<span>${esc(P[k].button)}</span><em class="next-tag"></em></button>`).join('');
-  dock.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { ui.closePanels(); play(b.dataset.p); });
+  const QW = (window.QUIZZES && window.QUIZZES.words) || {};
+  dock.innerHTML = ORDER.map(k => `<button class="dock-btn proc" data-p="${k}">${icon('p_' + k)}<span>${esc(P[k].button)}</span><em class="next-tag"></em></button>`).join('') +
+    (ui.quiz ? `<button class="dock-btn proc quizbtn" data-p="quiz">${icon('question')}<span>${esc(QW.button || 'Quiz')}</span><em class="next-tag"></em></button>` : '');
+  dock.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { ui.closePanels(); if (b.dataset.p === 'quiz') openQuiz(); else play(b.dataset.p); });
+  // the 8-question quiz at the end of the main path
+  function openQuiz() {
+    settle(); api.busy = false; api.fx.clear(); api.grain.scale(1);
+    st.lastDone = 'quiz'; updateDock();
+    ui.quiz.open('realWorld', () => updateDock());
+  }
   // "Start here" before anything has played; then "Next" on the step after the last one played (main path, in menu order)
   function updateDock() {
-    const next = st.lastDone ? ORDER[(ORDER.indexOf(st.lastDone) + 1) % ORDER.length] : ORDER[0];
+    // after Eruption comes the Quiz; after the Quiz, back to the start
+    const next = !st.lastDone || st.lastDone === 'quiz' ? ORDER[0] : st.lastDone === ORDER[ORDER.length - 1] && ui.quiz ? 'quiz' : ORDER[(ORDER.indexOf(st.lastDone) + 1) % ORDER.length];
     dock.querySelectorAll('[data-p]').forEach(b => {
       const k = b.dataset.p, tagged = !anim && k === next;
       b.classList.toggle('on', !!anim && anim.k === k);
