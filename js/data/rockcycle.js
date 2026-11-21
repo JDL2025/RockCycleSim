@@ -25,13 +25,27 @@
 
    startTag    The label on the first step when the site opens.
    nextTag     The label on the next step along the main path
-               (the menu-bar order; after Eruption it goes back to
-               Weathering & Erosion).
+               (the menu-bar order; after Eruption comes the Quiz,
+               then back to Weathering & Erosion).
+   lastTag     The label that always sits on the Quiz button.
+   buttonColors  The outline and glow color of each menu-bar button.
    scale       The "Is this the real size?" box (Help button).
    ===================================================================== */
 window.ROCK_CYCLE = {
   startTag: 'Start here',
   nextTag: 'Next',
+  lastTag: 'Last',
+  buttonColors: {
+    weather: '#4fc3f7',       // sky blue
+    transport: '#2dd4bf',     // teal
+    compact: '#3ddc84',       // green
+    cement: '#c6f432',        // lime
+    heatp: '#ffd84d',         // yellow
+    melt: '#ff9a3c',          // orange
+    cool: '#ff5a5a',          // red
+    erupt: '#ff5ab4',         // pink
+    quiz: '#b16cff'           // purple
+  },
   start: 'surface',           // the grain starts as rock on the mountain
 
   steps: {

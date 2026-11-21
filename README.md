@@ -13,7 +13,7 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 | Part of the screen | What it does |
 |---|---|
 | **3D block** | Real photo textures on the ground and rock. Drag with one finger to turn it, pinch to zoom, drag with two fingers to move it. Mountains, river, delta, sea, volcano, lava flow, sedimentary layers, metamorphic rock, igneous rock and the glowing magma chamber. |
-| **Menu bar (bottom)** | The 8 steps: Weathering & Erosion, Transport & Deposition, Compaction, Cementation, Heat & Pressure, Melting, Cooling Underground, Eruption. Tap one to watch the grain move. When the site opens, Weathering & Erosion glows green with a “Start here” tag. After each step, the next step along the main path (menu order; after Eruption it goes back to Weathering & Erosion) glows green with a “Next” tag. |
+| **Menu bar (bottom)** | The 8 steps: Weathering & Erosion, Transport & Deposition, Compaction, Cementation, Heat & Pressure, Melting, Cooling Underground, Eruption. Tap one to watch the grain move. Each button has its own outline color (blue, teal, green, lime, yellow, orange, red, pink, and purple for the Quiz). When the site opens, Weathering & Erosion glows in its color with a “Start here” tag. After each step, the next step along the main path (menu order; after Eruption comes the Quiz, then back to Weathering & Erosion) glows with a “Next” tag. The Quiz button always has a “Last” tag. |
 | **Message at the top** | Each step’s words appear as the animation reaches them, and **all of them stay on the screen** after the animation ends, until the next step starts. |
 | **Color flashes** | Cementation, Heat & Pressure, Cooling Underground and Eruption end with a big color flash: “Sedimentary rock has now been made!” (green), “Metamorphic rock has now been made!” (purple), “Igneous rock has been created!” (red). The glowing grain turns the same color, so students can see the rock type change. |
 | **Camera moves** | Transport & Deposition turns the block so the river and ocean show. Cementation zooms in to the buried layers, shows water seeping down with arrows, glows gold as the minerals glue the sediment, then zooms back out. |
@@ -21,10 +21,11 @@ Fourth in the family with Mars Explorer, Earth Explorer and Plate Motion Explore
 
 ## Quizzes
 
-- **Rock Cycle Quiz (8 questions):** the **Quiz** button at the end of the menu bar. After Eruption, the green “Next” tag points to it.
-- **Sun Energy Quiz and Earth’s Heat Quiz (3 questions each):** the **Take the Quiz** button at the end of each Energy story.
+- **Rock Cycle Quiz (8 questions):** the **Quiz** button at the end of the menu bar (tagged “Last”). After Eruption, it glows to show it’s next. Neon purple.
+- **Sun Energy Quiz and Earth’s Heat Quiz (3 questions each):** the **Take the Quiz** button at the end of each Energy story. Neon orange (Sun) and neon pink (Earth’s heat).
+- Each quiz box has a softly pulsing glow in its color.
 - Students tap an answer and find out right away. A wrong answer explains why it’s wrong, and they try again. A second wrong answer explains why, then shows the right answer and why it’s right.
-- The score screen counts answers that were right on the first try, and lists every question (first try / second try / missed). A perfect score plays fireworks.
+- The score screen counts answers that were right on the first try, with a big colorful percentage next to the score, and lists every question (first try / second try / missed). A perfect score plays fireworks.
 - All questions, answers and explanations are in `js/data/quizzes.js`.
 
 ## Modes (menu on the right)
@@ -54,6 +55,8 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 | Any words students read (the message at the top, the color flashes, the menu-bar buttons, the “Start here” / “Next” tags, the not-to-scale note) | `js/data/rockcycle.js` |
 | Which word is yellow | `js/data/rockcycle.js` (put `*stars*` around the word) |
 | The grain colors (and flash colors) | `js/data/rockcycle.js` (`rocks`) |
+| Menu-bar button colors and the “Last” tag | `js/data/rockcycle.js` (`buttonColors`, `lastTag`) |
+| Quiz colors (purple / orange / pink) | `js/data/quizzes.js` (`theme`) |
 | All Energy mode words, the layer temperatures, the button words | `js/data/energy.js` |
 | Quiz questions, answers and explanations | `js/data/quizzes.js` |
 | Songs, song names, music on/off at start | `js/data/music.js` |

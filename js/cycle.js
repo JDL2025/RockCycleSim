@@ -23,8 +23,11 @@ export function createCycle(api, ui, D) {
   // ---------- the menu bar ----------
   const dock = $('#dock');
   const QW = (window.QUIZZES && window.QUIZZES.words) || {};
-  dock.innerHTML = ORDER.map(k => `<button class="dock-btn proc" data-p="${k}">${icon('p_' + k)}<span>${esc(P[k].button)}</span><em class="next-tag"></em></button>`).join('') +
-    (ui.quiz ? `<button class="dock-btn proc quizbtn" data-p="quiz">${icon('question')}<span>${esc(QW.button || 'Quiz')}</span><em class="next-tag"></em></button>` : '');
+  // each button has its own color (rockcycle.js buttonColors), passed to the CSS as "r,g,b"
+  const BC = D.buttonColors || {};
+  const rgb = k => { const h = String(BC[k] || '#7fe0a0').replace('#', ''), n = parseInt(h.length === 3 ? h.replace(/./g, '$&$&') : h, 16); return `${n >> 16 & 255},${n >> 8 & 255},${n & 255}`; };
+  dock.innerHTML = ORDER.map(k => `<button class="dock-btn proc" data-p="${k}" style="--c:${rgb(k)}">${icon('p_' + k)}<span>${esc(P[k].button)}</span><em class="next-tag"></em></button>`).join('') +
+    (ui.quiz ? `<button class="dock-btn proc quizbtn" data-p="quiz" style="--c:${rgb('quiz')}">${icon('question')}<span>${esc(QW.button || 'Quiz')}</span><em class="next-tag"></em></button>` : '');
   dock.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { ui.closePanels(); if (b.dataset.p === 'quiz') openQuiz(); else play(b.dataset.p); });
   // the 8-question quiz at the end of the main path
   function openQuiz() {
@@ -41,7 +44,8 @@ export function createCycle(api, ui, D) {
       b.classList.toggle('on', !!anim && anim.k === k);
       b.classList.toggle('start', tagged && !st.lastDone);
       b.classList.toggle('next', tagged && !!st.lastDone);
-      b.querySelector('.next-tag').textContent = st.lastDone ? D.nextTag : D.startTag;
+      // the Quiz button always says "Last"
+      b.querySelector('.next-tag').textContent = k === 'quiz' ? (D.lastTag || 'Last') : st.lastDone ? D.nextTag : D.startTag;
     });
   }
 

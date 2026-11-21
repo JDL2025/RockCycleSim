@@ -665,3 +665,63 @@ body.mode-energy .dock, body.mode-energy .banner { display: none !important; }
 .qz-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .qz-list li { padding: 6px 10px; font-size: 15px; }
 @media (max-width: 760px), (orientation: portrait) and (max-width: 900px) { .qz-list { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   Menu bar: each button has its own color (--c = "r,g,b", set from
+   buttonColors in js/data/rockcycle.js)
+   ===================================================================== */
+.dock-btn.proc[style*="--c"] { box-shadow: inset 0 0 0 1.5px rgba(var(--c), .38); }
+.dock-btn.proc[style*="--c"] svg { stroke: rgb(var(--c)); }
+.dock-btn.proc[style*="--c"].on { background: rgb(var(--c)); color: #10131a; box-shadow: 0 0 18px rgba(var(--c), .55); }
+.dock-btn.proc[style*="--c"].on svg { stroke: currentColor; }
+.dock-btn.proc[style*="--c"].next,
+.dock-btn.proc[style*="--c"].start { background: rgba(var(--c), .14); animation: btnGlow 2s ease-in-out infinite; }
+@keyframes btnGlow {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(var(--c), .8), 0 0 10px rgba(var(--c), .25); }
+  50% { box-shadow: inset 0 0 0 2px rgb(var(--c)), 0 0 22px rgba(var(--c), .6); }
+}
+.dock-btn.proc[style*="--c"] .next-tag { background: rgb(var(--c)); color: #10131a; }
+/* the Quiz button always shows its "Last" tag */
+.dock-btn.proc.quizbtn .next-tag { display: block; white-space: nowrap; right: 50%; transform: translateX(50%); }
+
+/* =====================================================================
+   Quiz colors: purple (Rock Cycle), orange (Sun Energy), pink (Earth's Heat)
+   --q = main color, --qt = lighter text color
+   ===================================================================== */
+.modal.quiz { --q: 177,77,255; --qt: #dcb0ff; }
+.modal.quiz.t-orange { --q: 255,138,31; --qt: #ffc47e; }
+.modal.quiz.t-pink { --q: 255,63,164; --qt: #ffa6d4; }
+.modal.quiz {
+  background:
+    radial-gradient(120% 70% at 0% 0%, rgba(var(--q), .30), transparent 62%),
+    radial-gradient(90% 60% at 100% 100%, rgba(var(--q), .16), transparent 65%),
+    rgba(16, 14, 24, .94);
+  border: 1.5px solid rgba(var(--q), .9);
+  animation: popIn .3s cubic-bezier(.2,.9,.3,1.2), quizGlow 2.8s ease-in-out .3s infinite;
+}
+@keyframes quizGlow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(var(--q), .35), 0 0 16px rgba(var(--q), .35), 0 24px 60px rgba(0,0,0,.6); }
+  50% { box-shadow: 0 0 0 1px rgba(var(--q), .7), 0 0 38px rgba(var(--q), .7), 0 24px 60px rgba(0,0,0,.6); }
+}
+.modal.quiz .qz-title { color: var(--qt); text-shadow: 0 0 18px rgba(var(--q), .55); }
+.modal.quiz .qopt:not(.right):not(.wrong) { border-color: rgba(var(--q), .32); background: rgba(var(--q), .07); }
+.modal.quiz .qopt:not(.right):not(.wrong) i { background: rgba(var(--q), .28); color: #fff; }
+.modal.quiz .qopt:not(:disabled):active { background: rgba(var(--q), .2); }
+.modal.quiz .qz-go { background: linear-gradient(135deg, rgb(var(--q)), var(--qt)); color: #14101c; box-shadow: 0 0 18px rgba(var(--q), .45); }
+.modal.quiz .qz-big b { color: var(--qt); }
+
+/* the big percentage next to the score */
+.qz-scorerow { display: flex; align-items: center; gap: 6px 22px; flex-wrap: wrap; margin-bottom: 6px; }
+.qz-scorerow .qz-big { margin: 0; }
+.qz-pct {
+  font-family: var(--display); font-weight: 800; font-size: 76px; line-height: 1; letter-spacing: -.01em;
+  background: linear-gradient(135deg, #fff 0%, var(--qt) 35%, rgb(var(--q)) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(var(--q), .6));
+  animation: pctPop .6s cubic-bezier(.2,.9,.3,1.4) .15s both;
+}
+.qz-pct small { font-size: .55em; margin-left: 2px; }
+.qz-pct.perfect { background-image: linear-gradient(135deg, #fff6b0 0%, #ffd84d 40%, rgb(var(--q)) 100%); }
+@keyframes pctPop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 560px) { .qz-pct { font-size: 60px; } }
+@media (prefers-reduced-motion: reduce) { .modal.quiz, .dock-btn.proc.next, .dock-btn.proc.start { animation: none; } }

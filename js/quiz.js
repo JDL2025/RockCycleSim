@@ -24,7 +24,7 @@ export function createQuiz(ui, Q) {
 
     function frame(inner) {
       ui.speech.stop();
-      back.innerHTML = `<div class="modal quiz" role="dialog" aria-modal="true" aria-label="${esc(set.title)}">
+      back.innerHTML = `<div class="modal quiz t-${esc(set.theme || 'purple')}" role="dialog" aria-modal="true" aria-label="${esc(set.title)}">
           <button class="close qz-x" aria-label="Close">✕</button>${inner}</div>`;
       back.querySelector('.qz-x').onclick = finish;
       const sb = back.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(back.querySelector('.qz-read'), sb);
@@ -80,7 +80,7 @@ export function createQuiz(ui, Q) {
     }
 
     function score() {
-      const n = set.questions.length, first = results.filter(r => r === 'first').length, perfect = first === n;
+      const n = set.questions.length, first = results.filter(r => r === 'first').length, perfect = first === n, pct = Math.round(first / n * 100);
       const icon = r => r === 'first' ? '<b class="qs-ok">✓</b>' : r === 'second' ? '<b class="qs-2nd">✓</b>' : '<b class="qs-no">✗</b>';
       const note = r => r === 'first' ? 'Right on the first try' : r === 'second' ? 'Right on the second try' : 'Missed';
       frame(`
@@ -88,7 +88,10 @@ export function createQuiz(ui, Q) {
         <div class="qz-read qz-score">
           <div class="qz-qrow">${sayBtn()}</div>
           <h3>${esc(perfect ? W.perfectTitle : W.scoreTitle)}</h3>
-          <p class="qz-big say"><b>${first}</b> out of <b>${n}</b> ${esc(W.firstTry)}</p>
+          <div class="qz-scorerow">
+            <p class="qz-big say"><b>${first}</b> out of <b>${n}</b> ${esc(W.firstTry)}</p>
+            <span class="qz-pct${perfect ? ' perfect' : ''}" aria-label="${pct} percent">${pct}<small>%</small></span>
+          </div>
           <p class="say">${esc(perfect ? W.perfectSub : W.goodJob)}</p>
           <ol class="qz-list">${set.questions.map((q, k) => `<li>${icon(results[k])}<span>${esc(q.q)}<em>${note(results[k])}</em></span></li>`).join('')}</ol>
         </div>

@@ -4,6 +4,8 @@
    (On GitHub: open this file, tap the pencil icon, edit, then
    "Commit changes". Keep the quote marks and commas as they are.)
 
+   Each quiz has a title and a theme color: 'purple', 'orange' or 'pink'.
+
    Each question has:
      q         the question
      answers   4 choices. Each choice has:
@@ -43,6 +45,7 @@ window.QUIZZES = {
 
   realWorld: {
     title: 'Rock Cycle Quiz',
+    theme: 'purple',
     questions: [
       {
         q: 'What do wind and rain do during weathering and erosion?',
@@ -126,17 +129,18 @@ window.QUIZZES = {
         answers: [
           { text: 'Compaction and cementation', why: 'Compaction and cementation make sedimentary rock.' },
           { text: 'Weathering and erosion', why: 'Weathering and erosion break rock into sediment.' },
-          { text: 'Heat and pressure', why: 'Heat and pressure make metamorphic rock.' },
-          { text: 'Cooling underground and eruption' }
+          { text: 'Heat and pressure', why: 'Heat and pressure change rock without melting it. That makes metamorphic rock.' },
+          { text: 'Melting, then cooling and hardening' }
         ],
         correct: 3,
-        explain: 'Igneous rock is made when magma cools and hardens. It can cool underground, or erupt and cool on the surface. In the sim, the grain turns red!'
+        explain: 'First, rock melts into magma. Then the magma cools and hardens into igneous rock. It can cool underground, or erupt and cool on the surface. In the sim, the grain turns red!'
       }
     ]
   },
 
   sedimentary: {
     title: 'Sun Energy Quiz',
+    theme: 'orange',
     questions: [
       {
         q: 'Where does the energy that starts making sedimentary rock come from?',
@@ -176,6 +180,7 @@ window.QUIZZES = {
 
   igneous: {
     title: 'Earth’s Heat Quiz',
+    theme: 'pink',
     questions: [
       {
         q: 'How did ancient Earth get so hot?',
