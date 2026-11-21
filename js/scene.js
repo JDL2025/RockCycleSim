@@ -502,6 +502,7 @@ export function createScene(container) {
     if (!running) return;
     requestAnimationFrame(frame);
     const rdt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now; frameN++;
+    if (api.paused) { dirty = true; return; }             // another mode covers the 3D model: don't draw it
     const idle = !api.busy && !api.awake && !(api.space && api.space.on) && !gesture && now - lastInput > 7000 && !viewTween && Math.abs(rotV.y) < 1e-5 && Math.abs(zoomV) < 1e-4 && fx.lavaT < 0;
     if (idle && !dirty && frameN % 3) return;           // calm water when nobody is touching: fewer frames
     const dt = idle ? rdt * 3 : rdt;

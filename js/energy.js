@@ -74,20 +74,25 @@ export function createEnergy(api, ui, cycle, E) {
     api.fx.cloudAt(null); api.fx.vapor(0); api.fx.deepHeat(0);
     api.inputOn = true; api.hideLabels = false;
   }
+  // other modes (the Rock Cycle Diagram) hear about every mode change
+  const modeHooks = [];
   function setMode(m) {
     token++; hideBox(); ui.closeModal(); ui.closePanels(); if (ui.quiz) ui.quiz.close();
     cleanScene(); cycle.reset();
     applyModeUI(m);
     if (m === 'real') { api.setView('tilt', 1200); return; }
-    askKind();
+    if (m === 'energy') askKind();
   }
   function applyModeUI(m) {
+    const was = mode;
     mode = m;
     document.body.classList.toggle('mode-energy', m === 'energy');
     api.awake = m === 'energy';
+    api.paused = m === 'diagram';                      // the 3D model rests while the diagram is showing
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
     ui.updateInsets();
     ui.setHud(m === 'energy' ? E.hud : undefined);
+    if (was !== m || m === 'diagram') modeHooks.forEach(h => h(m));
   }
   function askKind() {
     ui.modal({
@@ -321,5 +326,5 @@ export function createEnergy(api, ui, cycle, E) {
   // ---------- the Modes menu ----------
   document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
   $('#storySay').onclick = () => ui.speech.read(boxText, $('#storySay'));
-  return { setMode, mode: () => mode, start };
+  return { setMode, mode: () => mode, start, onMode: fn => modeHooks.push(fn) };
 }

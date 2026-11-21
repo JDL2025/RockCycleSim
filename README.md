@@ -44,6 +44,15 @@ Each story has 4 parts. Students tap **Continue the Energy Journey** to go on. T
 
 The end buttons go to the other story or back to the Real World Rock Cycle. Layer temperatures come from National Geographic Education, Science News Explores and Physical Geology (2nd ed.), rounded for students.
 
+**Rock Cycle Diagram** is a classroom-style rock cycle diagram, with the 5 boxes in the same places as the class assessment diagram (Metamorphic Rock on top, Sedimentary Rock left, Magma right, Sediment bottom-left, Igneous Rock bottom-right) and the same 10 arrows. Each box has a picture (sediment = pebbles and sand, sedimentary = layers, metamorphic = wavy bands, igneous = speckled crystals, magma = glowing liquid rock) and the site's rock colors.
+
+- **The Big Circle (5 steps):** a glowing grain rides each arrow clockwise: Weathering and Erosion → Compacting and Cementing → Heat and Pressure → Melting → Cooling, back to igneous rock. Boxes and arrows stay grey until students reach them.
+- **The Shortcuts (3 rules):** *any* rock on the surface can be weathered (sedimentary → sediment, metamorphic → sediment); *any* rock deep underground can be heated and squeezed (igneous → metamorphic); *any* rock can melt (sedimentary → magma, igneous → magma).
+- Each process has its own moving arrow: sky-blue wispy wind (weathering), green pressed layers with glue drops (compacting and cementing), yellow squeezing chevrons with heat glow (heat and pressure), orange flickering flames (melting), icy-blue jagged frost with twinkling crystals (cooling).
+- After the lesson, students can tap any box or arrow picture to see it again.
+- **Diagram Quiz (drag and drop, 4 rounds, neon teal):** ① the 3 rock types ② Sediment ③ Magma ④ the 10 arrows, using 5 process names that can be used more than once. Students can drag a name, or tap a name and then tap the spot. Wrong answers shake and give a hint. The score counts the 5 rock names and 10 arrows right on the first try, with a big percentage, and fireworks for a perfect score.
+- The 3D model rests (isn't drawn) while the diagram is showing, to save iPad battery.
+
 ## Updating later
 
 Claude manages this repository for you. If you ever upload files yourself: **Add file → Upload files**, drag in the changed files (keep their folders), then **Commit changes**. Wait 1–2 minutes and reload on the iPad.
@@ -59,6 +68,7 @@ Claude manages this repository for you. If you ever upload files yourself: **Add
 | Menu-bar button colors and the “Last” tag | `js/data/rockcycle.js` (`buttonColors`, `lastTag`) |
 | Quiz colors (purple / orange / pink) | `js/data/quizzes.js` (`theme`) |
 | All Energy mode words, the layer temperatures, the button words | `js/data/energy.js` |
+| All Rock Cycle Diagram words, rock and arrow colors, the Diagram Quiz | `js/data/diagram.js` |
 | Quiz questions, answers and explanations | `js/data/quizzes.js` |
 | Songs, song names, music on/off at start | `js/data/music.js` |
 | Label names on the block (Mountains, Volcano…) | `js/scene.js` (search for `LABELS`) |
@@ -89,7 +99,8 @@ js/scene.js           the 3D block, effects, labels, touch controls
 js/glsl.js            shaders (ground, rock faces, sea, river)
 js/geo.js             the shape of the land and the grain's paths
 js/cycle.js           the rock cycle: the 8 steps, messages, color flashes, Next tags
-js/energy.js          Energy mode: the two stories
+js/energy.js          Energy mode: the two stories (and switching modes)
+js/diagram.js         Rock Cycle Diagram mode: the diagram, lesson and drag-and-drop quiz
 js/space.js           the space scene: stars, Sun, Earth, space rocks
 js/quiz.js            the quizzes (two tries, score screen)
 js/app.js             panels, pop-ups, celebration, music, Read to me
@@ -99,6 +110,7 @@ js/data/rockcycle.js  all the words (edit me)
 js/data/music.js      songs (edit me)
 js/data/energy.js     Energy mode words (edit me)
 js/data/quizzes.js    quiz questions (edit me)
+js/data/diagram.js    Rock Cycle Diagram words and quiz (edit me)
 assets/tex/           ground and rock photo textures
 assets/fonts/, lib/, music/   fonts, Three.js, songs
 build_tools/          how the textures were made (not needed by the site)
