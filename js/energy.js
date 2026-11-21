@@ -196,22 +196,32 @@ export function createEnergy(api, ui, cycle, E) {
       space.on = false; space.beam.on = 0; st.on = 0; space.hit(0); space.earth.visible = false; space.sun.visible = false;
       skyFade.style.opacity = 0; space.stars(0);
       api.block.visible = true; api.block.scale.setScalar(1); api.hideLabels = false;
-      api.flyTo({ yaw: -0.25, pitch: 0.42, k: 0.8, target: [0, -0.3, 0] }, 10);
+      // start close to the sea, so students see the little cloud form
       const C0 = [3.1, 1.15, 0.05];
+      const seaView = { yaw: 0.32, pitch: 0.2, k: 0.4, target: [2.95, 0.92, 0.25] };
+      api.flyTo(seaView, 10);
       api.fx.vapor(1, C0); api.fx.cloudAt(C0, 0.06);
       await tween(0.9, e => { white.style.opacity = 1 - e; });
-      api.inputOn = true;
-      await tween(4.5, e => api.fx.cloudAt(C0, 0.06 + 0.94 * ease(e)));          // condensing into a cloud
+      await tween(3.0, e => api.fx.cloudAt(C0, 0.06 + 0.94 * ease(e)));          // condensing into a cloud
       api.fx.vapor(0);
-      const spot = api.cloudSpot(G.LOC.surface);
-      await tween(3.2, e => { const k = ease(e); api.fx.cloudAt([C0[0] + (spot[0] - C0[0]) * k, C0[1] + (spot[1] - C0[1]) * k, C0[2] + (spot[2] - C0[2]) * k], 1); });
+      // the camera follows the cloud over the land to the mountain
+      const spot = api.cloudSpot(G.LOC.surface), endView = { yaw: -0.3, pitch: 0.3, k: 0.46 };
+      await tween(5.0, e => {
+        const k = ease(e), c = [C0[0] + (spot[0] - C0[0]) * k, C0[1] + (spot[1] - C0[1]) * k, C0[2] + (spot[2] - C0[2]) * k];
+        api.fx.cloudAt(c, 1);
+        api.flyTo({ yaw: seaView.yaw + (endView.yaw - seaView.yaw) * k, pitch: seaView.pitch + (endView.pitch - seaView.pitch) * k, k: seaView.k + (endView.k - seaView.k) * k,
+          target: [c[0] - 0.15 * k, c[1] - 0.23 - 0.45 * k, c[2] + 0.2] }, 1);
+      });
+      api.inputOn = true;
       showBox(2);
     },
     // D. the storm: wind and rain weather the mountain (the same Weathering & Erosion animation)
     async () => {
       hideBox();
       api.fx.cloudAt(null);
-      cycle.play('weather', { quiet: true });
+      // zoom out a bit so the whole mountainside and river show while the rock weathers
+      api.flyTo({ yaw: -0.38, pitch: 0.4, k: 0.62, target: [-1.2, -0.1, 0.35] }, 1500);
+      cycle.play('weather', { quiet: true, cam: false });
       await sleep(0.5);
       await until(() => !cycle.isAnimating());
       await sleep(0.6);

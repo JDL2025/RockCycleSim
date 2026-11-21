@@ -8,6 +8,18 @@ import * as G from './geo.js';
 
 // camera views used by some steps
 const TRANSPORT_VIEW = { yaw: 0.36, pitch: 0.36, k: 0.8, target: [0.6, -0.5, 0.1] };
+// where the camera starts for each step (the student can still move it during the animation)
+//   yaw = turn left/right, pitch = look down from above, k = zoom (smaller = closer), target = the point the camera looks at
+const STEP_VIEWS = {
+  weather: 'opening',                                                   // the view the site opens with
+  transport: TRANSPORT_VIEW,
+  compact: { yaw: 0.04, pitch: 0.1, k: 0.42, target: [2.1, -0.55, 1.6] },  // close-up of the sea floor and the layers below it
+  // cement has its own close-up on the grain (below)
+  heatp: { yaw: 0.0, pitch: 0.05, k: 0.37, target: [1.95, -1.15, 1.6] },    // close-up of the right side of the cut face
+  melt: { yaw: 0.03, pitch: 0.1, k: 0.56, target: [1.0, -0.8, 1.0] },     // straight at the whole cut face
+  cool: { yaw: -0.28, pitch: 0.14, k: 0.78, target: [1.1, -0.85, 0.6] },  // the cut face, a little from the left
+  erupt: { yaw: -0.45, pitch: 0.4, k: 0.78, target: [1.6, -0.45, 0] }     // from above and the left: the volcano and the lava flow
+};
 // when each line of the message appears (fraction of the animation; 'sea' = when the grain reaches the ocean)
 const CUES = { transport: [0, 'sea'], compact: [0, 0.45], cement: [0, 0.5], heatp: [0, 0.96], cool: [0, 0.9] };
 
@@ -31,9 +43,9 @@ export function createCycle(api, ui, D) {
   dock.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { ui.closePanels(); if (b.dataset.p === 'quiz') openQuiz(); else play(b.dataset.p); });
   // the 8-question quiz at the end of the main path
   function openQuiz() {
-    settle(); api.busy = false; api.fx.clear(); api.grain.scale(1);
+    settle(); api.busy = false; api.fx.clear(); api.grain.scale(1); ui.setHud();
     st.lastDone = 'quiz'; updateDock();
-    ui.quiz.open('realWorld', () => updateDock());
+    ui.quiz.open('realWorld', () => updateDock(), { side: true });     // the model stays in view beside the quiz
   }
   // "Start here" before anything has played; then "Next" on the step after the last one played (main path, in menu order)
   function updateDock() {
@@ -79,10 +91,10 @@ export function createCycle(api, ui, D) {
     if (now) { savedView = null; api.flyTo(v, 1200); }
     else viewTimer = setTimeout(() => { savedView = null; api.flyTo(v, 1600); }, 2600);
   }
-  function play(k, { quiet = false } = {}) {     // quiet = no message at the top (used by Energy mode)
+  function play(k, { quiet = false, cam = true } = {}) {     // quiet = no message at the top; cam = false: leave the camera alone (both used by Energy mode)
     settle();
     ui.clearFlare();
-    if (k !== 'cement') restoreView(true);
+    if (k !== 'cement') { if (cam && STEP_VIEWS[k]) { clearTimeout(viewTimer); savedView = null; } else restoreView(true); }
     let hopFrom = null;
     if (!P[k].from.includes(st.rock)) {               // this step starts from a different rock: the grain hops there first
       hopFrom = st.pos.slice(); st.rock = P[k].from[0]; st.pos = G.LOC[st.rock].slice();
@@ -103,7 +115,9 @@ export function createCycle(api, ui, D) {
     api.busy = true;
     if (hopFrom) { api.grain.set(hopFrom); } else { api.grain.set(pts[0]); api.grain.color(COLOR(R[st.rock].color)); }
     // camera moves for some steps
-    if (k === 'transport') api.flyTo(TRANSPORT_VIEW, 1800);
+    const V = cam && STEP_VIEWS[k];
+    if (V === 'opening') api.setView('tilt', 1600);
+    else if (V) api.flyTo(V, k === 'transport' ? 1800 : 1600);
     if (k === 'cement') {
       clearTimeout(viewTimer);
       if (!savedView) savedView = api.getView();

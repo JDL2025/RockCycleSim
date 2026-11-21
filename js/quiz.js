@@ -11,15 +11,21 @@ export function createQuiz(ui, Q) {
   let back = null;
   const sayBtn = () => ui.speech.ok ? `<button class="say-btn small" data-say><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Read to me</span></button>` : '';
 
-  function close() { ui.speech.stop(); if (back) { back.remove(); back = null; } }
+  let closeHook = null;
+  function close() {
+    ui.speech.stop(); if (back) { back.remove(); back = null; }
+    if (closeHook) { const h = closeHook; closeHook = null; h(); }
+  }
 
   // open a quiz: key = 'realWorld' | 'sedimentary' | 'igneous'
-  function open(key, onDone) {
+  // side: true = the quiz sits on the right, with the 3D model still showing on the left
+  function open(key, onDone, { side = false } = {}) {
     const set = Q[key]; if (!set) return;
     ui.closeModal(); close();
     const results = [];
-    back = document.createElement('div'); back.className = 'modal-back quiz-back';
+    back = document.createElement('div'); back.className = 'modal-back quiz-back' + (side ? ' side' : '');
     document.body.appendChild(back);
+    if (side && ui.quizSide) { ui.quizSide(true); closeHook = () => ui.quizSide(false); }
     const finish = () => { close(); onDone && onDone(); };
 
     function frame(inner) {

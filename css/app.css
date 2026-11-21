@@ -725,3 +725,17 @@ body.mode-energy .dock, body.mode-energy .banner { display: none !important; }
 @keyframes pctPop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (max-width: 560px) { .qz-pct { font-size: 60px; } }
 @media (prefers-reduced-motion: reduce) { .modal.quiz, .dock-btn.proc.next, .dock-btn.proc.start { animation: none; } }
+
+/* =====================================================================
+   Rock Cycle Quiz beside the 3D model: the quiz on the right, the model
+   (smaller, no labels) on the left. On tall screens: model on top.
+   Students can still turn and zoom the model.
+   ===================================================================== */
+.quiz-back.side { justify-content: flex-end; padding: 16px 20px; background: linear-gradient(90deg, transparent 30%, rgba(4,6,10,.35)); pointer-events: none; }
+.quiz-back.side .modal.quiz { pointer-events: auto; width: min(640px, 60vw); }
+body.quiz-side #rail, body.quiz-side #modes, body.quiz-side #dock, body.quiz-side .banner, body.quiz-side .flare { visibility: hidden; }
+body.quiz-side #tags { display: none; }
+@media (orientation: portrait) {
+  .quiz-back.side { align-items: flex-end; justify-content: center; background: linear-gradient(180deg, transparent 30%, rgba(4,6,10,.35)); }
+  .quiz-back.side .modal.quiz { width: min(680px, calc(100vw - 32px)); height: 60vh; max-height: 60vh; }
+}

@@ -56,10 +56,24 @@ export function createUI(api) {
     insets.l = rail.right + 6; insets.t = Math.max(hud.bottom + 6, 70); insets.r = W - modes.left + 6;
     // Energy mode has no menu bar; leave room for the story box instead
     insets.b = document.body.classList.contains('mode-energy') ? Math.min(230, H * 0.3) : H - dock.top + 6;
+    // Rock Cycle Quiz: the model shrinks into the space beside the quiz (left side), or above it on tall screens
+    if (document.body.classList.contains('quiz-side')) {
+      if (quizTall()) { insets.l = 12; insets.r = 12; insets.b = Math.round(H * 0.6) + 28; }
+      else { insets.l = 12; insets.r = Math.min(640, Math.round(W * 0.6)) + 36; insets.b = 14; }
+    }
     api.setInsets(insets.l, insets.r, insets.t, insets.b);
     placeBanner();
   }
   ui.updateInsets = updateInsets;
+  const quizTall = () => innerHeight >= innerWidth;   // same as the CSS (orientation: portrait)
+  // the Rock Cycle Quiz with the 3D model beside it: no labels, menus hidden, the whole model in view
+  ui.quizSide = on => {
+    document.body.classList.toggle('quiz-side', on);
+    api.hideLabels = on;
+    ui.clearFlare();
+    updateInsets();
+    api.setView('tilt', 1200);
+  };
   ui.insets = insets;
   window.addEventListener('resize', () => requestAnimationFrame(updateInsets));
 
