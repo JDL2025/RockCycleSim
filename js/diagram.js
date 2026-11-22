@@ -100,15 +100,25 @@ const PIC = {
     }
     return h;
   },
-  igneous() {
-    const r = rng(23), C = ['#2a2626', '#f8f4ef', '#d98a86', '#b9a39e', '#f2b8a6', '#7a6a68', '#fbe4dc'];
-    let h = `<rect x="-100" y="-52" width="200" height="104" fill="#e8c9c2"/>`;
-    for (let i = 0; i < 95; i++) {
-      const cx = -98 + r() * 196, cy = -50 + r() * 100, n = 4 + Math.floor(r() * 2), rad = 2.5 + r() * 4.5, a0 = r() * 6.3;
+  igneous() {                                   // dark, glassy rock (like obsidian or basalt) with light speckles
+    const r = rng(23);
+    let h = `<rect x="-100" y="-52" width="200" height="104" fill="url(#dgDark)"/>`;
+    // shiny curved "glass" fractures, like obsidian
+    for (let i = 0; i < 6; i++) {
+      const x = -90 + r() * 180, y = -46 + r() * 70, w = 18 + r() * 26;
+      h += `<path d="M${x.toFixed(0)},${y.toFixed(0)} q${(w / 2).toFixed(0)},${(-8 - r() * 8).toFixed(0)} ${w.toFixed(0)},0" stroke="#ffffff" stroke-width="${(1 + r() * 1.5).toFixed(1)}" opacity="${(0.08 + r() * 0.12).toFixed(2)}" fill="none" stroke-linecap="round"/>`;
+    }
+    // little holes (gas bubbles), like basalt
+    for (let i = 0; i < 9; i++) h += `<ellipse cx="${(-92 + r() * 184).toFixed(1)}" cy="${(-46 + r() * 60).toFixed(1)}" rx="${(1.6 + r() * 2.4).toFixed(1)}" ry="${(1.2 + r() * 1.6).toFixed(1)}" fill="#08070a" stroke="#3a3840" stroke-width=".8"/>`;
+    // speckles and crystals
+    const C = ['#efece6', '#c9c3bb', '#9b958e', '#e2b3aa', '#8fae74', '#f8f6f0', '#b8b2c4'];
+    for (let i = 0; i < 120; i++) {
+      const cx = -98 + r() * 196, cy = -50 + r() * 100, big = r() < 0.18, n = 4 + Math.floor(r() * 2), rad = big ? 2.4 + r() * 2.4 : 0.8 + r() * 1.3, a0 = r() * 6.3;
       let d = '';
       for (let k = 0; k < n; k++) { const a = a0 + k * 6.283 / n + r() * 0.5, rr = rad * (0.6 + r() * 0.5); d += (k ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ',' + (cy + Math.sin(a) * rr).toFixed(1); }
-      h += `<path d="${d}Z" fill="${C[i % C.length]}"/>`;
+      h += `<path d="${d}Z" fill="${C[i % C.length]}" opacity="${big ? 0.95 : 0.8}"/>`;
     }
+    h += `<rect x="-100" y="-52" width="200" height="104" fill="url(#dgGloss)"/>`;
     return h;
   },
   magma() {
@@ -215,6 +225,8 @@ export function createDiagram(api, ui, D, energy) {
       <filter id="dgBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
       <linearGradient id="dgFlame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff4d1a"/><stop offset=".55" stop-color="#ff9a3c"/><stop offset="1" stop-color="#ffe45c"/></linearGradient>
       <linearGradient id="dgSand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7e6b0"/><stop offset="1" stop-color="#e2c27a"/></linearGradient>
+      <linearGradient id="dgDark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e2c34"/><stop offset=".55" stop-color="#18171c"/><stop offset="1" stop-color="#0e0d11"/></linearGradient>
+      <linearGradient id="dgGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".16"/><stop offset=".35" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
       <radialGradient id="dgMagma" cx=".5" cy=".55" r=".75"><stop offset="0" stop-color="#fff0a0"/><stop offset=".25" stop-color="#ffd04d"/><stop offset=".6" stop-color="#ff9a3c"/><stop offset="1" stop-color="#d8461a"/></radialGradient>
     </defs>
     <g class="dg-lines">${lines}</g><g class="dg-tiles">${tiles}</g><g class="dg-nodes">${nodes}</g><g class="dg-grains"></g></svg>`;
@@ -287,9 +299,9 @@ export function createDiagram(api, ui, D, energy) {
 
   // ---------- grains riding the arrows ----------
   const lerpColor = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return `rgb(${x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(',')})`; };
-  function ride(id, dur = 2.6) {
+  function ride(id, dur = 3.6) {
     const a = A[id], g = GEO[id], el = document.createElementNS(NS, 'g');
-    el.innerHTML = `<circle r="18" class="gglow" filter="url(#dgBlur)"/><circle r="9" class="gcore"/>`;
+    el.innerHTML = `<circle r="28" class="gglow" filter="url(#dgBlur)"/><circle r="13.5" class="gcore"/>`;
     grainLayer.appendChild(el);
     return new Promise(res => movers.push({ id, g, el, t: 0, dur, c0: R[a.from].color, c1: R[a.to].color, res, tk }));
   }
@@ -332,11 +344,26 @@ export function createDiagram(api, ui, D, energy) {
     svg.classList.remove('quiz');
   }
   function startLesson() {
-    closeScore(); quiz = null; resetAll(); ui.setHud(D.hud);
-    step = -1; hereNode('igneous');
+    closeScore(); closeHint(); hideMeter(); quiz = null; resetAll(); ui.setHud(D.hud);
+    step = -1; cpDone.clear(); hereNode('igneous');
     setBox(L.intro.step, fmt(L.intro.text), [{ label: B.start, fn: nextStep }]);
   }
-  async function nextStep() {
+  // checkpoint questions pop up when Next is tapped after certain steps (see "checkpoints" in js/data/diagram.js)
+  const CP_THEMES = ['purple', 'orange', 'pink', 'teal'];
+  const cpDone = new Set();
+  function nextStep() {
+    if (busy) return;
+    const list = L.checkpoints || [], cp = list.find(c => c.after === step + 1);
+    if (cp && !cpDone.has(cp) && ui.quiz) {
+      cpDone.add(cp);
+      const my = tk;
+      ui.quiz.open({ title: L.checkpointTitle, theme: CP_THEMES[list.indexOf(cp) % CP_THEMES.length], finishLabel: L.checkpointContinue, questions: [cp] },
+        () => { if (my === tk && active) goStep(); }, { noScore: true, noClose: true });
+      return;
+    }
+    goStep();
+  }
+  async function goStep() {
     if (busy) return;
     step++;
     if (step < L.circle.length) {
@@ -391,8 +418,57 @@ export function createDiagram(api, ui, D, energy) {
     svg.classList.add('quiz');
     ROCK_KEYS.forEach(k => setNode(k, 'seen qz'));
     ARROW_IDS.forEach(id => setArrow(id, 'q'));
-    quiz = { round: 0, done: {}, miss: {}, sel: null };
+    quiz = { round: 0, done: {}, miss: {}, sel: null, count: 0, streak: 0 };
     showRound();
+    showMeter();
+  }
+
+  // ---------- the "7/15 completed" counter and the hot streak ----------
+  const TOTAL = ROCK_KEYS.length + ARROW_IDS.length;
+  let meter = null;
+  function showMeter() {
+    if (!meter) {
+      meter = document.createElement('div'); meter.className = 'dg-meter';
+      meter.innerHTML = `<span class="dg-count"></span><span class="dg-streak" aria-live="polite"></span>`;
+    }
+    box.querySelector('.story-top').insertBefore(meter, $('#storySay'));
+    updateMeter(false);
+  }
+  function hideMeter() { if (meter) meter.remove(); }
+  function updateMeter(changed) {
+    if (!meter || !quiz) return;
+    const n = quiz.count, lv = Math.min(3, Math.floor(n / 5)), c = meter.querySelector('.dg-count');
+    c.textContent = Q.counter.replace('{n}', n).replace('{total}', TOTAL);
+    c.className = 'dg-count lv' + lv;
+    if (changed) {
+      const boom = n > 0 && n % 5 === 0;                 // every 5: new color and a bright flash
+      c.classList.remove('bump', 'boom'); void c.offsetWidth; c.classList.add(boom ? 'boom' : 'bump');
+      if (boom) { const r = c.getBoundingClientRect(); ui.burst(r.left + r.width / 2, r.top + r.height / 2, false, ['#22e3c8', '#ff8a1f', '#ff3fa4', '#ffd84d'][lv]); }
+    }
+    const st = meter.querySelector('.dg-streak');
+    if (quiz.streak >= 5) {
+      st.innerHTML = `<i>🔥</i>${esc(Q.streak.replace('{n}', quiz.streak))}`;
+      st.classList.add('on'); if (changed) { st.classList.remove('pop'); void st.offsetWidth; st.classList.add('pop'); }
+    } else st.classList.remove('on', 'pop');
+  }
+
+  // ---------- the hint pop-up (a different color every time) ----------
+  const HINT_COLORS = ['177,77,255', '255,138,31', '255,63,164', '34,227,200', '79,195,247', '198,244,50', '255,216,77'];
+  let lastHint = -1, hintBack = null;
+  function closeHint() { if (hintBack) { hintBack.remove(); hintBack = null; ui.speech.stop(); } }
+  function hintPop(text) {
+    closeHint();
+    let i; do { i = Math.floor(Math.random() * HINT_COLORS.length); } while (i === lastHint); lastHint = i;
+    const title = Q.hintTitles[Math.floor(Math.random() * Q.hintTitles.length)];
+    hintBack = document.createElement('div'); hintBack.className = 'dg-hint-back';
+    hintBack.innerHTML = `<div class="dg-hint" role="alertdialog" aria-modal="true" style="--h:${HINT_COLORS[i]}">
+      <div class="dg-hint-top"><h3><i>💡</i>${esc(title)}</h3>${ui.speech.ok ? `<button class="say-btn small" data-say><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Read to me</span></button>` : ''}</div>
+      <p class="dg-hint-text say">${esc(text)}</p>
+      <button class="dg-hint-go">${esc(Q.hintButton)}</button></div>`;
+    document.body.appendChild(hintBack);
+    hintBack.querySelector('.dg-hint-go').onclick = closeHint;
+    hintBack.addEventListener('click', e => { if (e.target === hintBack) closeHint(); });
+    const sb = hintBack.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(hintBack.querySelector('.dg-hint-text'), sb);
   }
   function roundChips() {
     const r = Q.rounds[quiz.round];
@@ -423,11 +499,13 @@ export function createDiagram(api, ui, D, energy) {
     const right = rockRound ? t.key === chip : A[t.key].process === chip;
     const unit = rockRound ? 'r:' + chip : 'x:' + t.key;          // what this try counts against
     if (!right) {
-      quiz.miss[unit] = true;
+      quiz.miss[unit] = true; quiz.streak = 0; updateMeter(false);
       t.el.classList.remove('bad'); void t.el.getBoundingClientRect(); t.el.classList.add('bad');
-      feedback(`<b class="no">${esc(Q.wrong)}</b> ${esc(rockRound ? R[chip].hint : Q.processHints[A[t.key].process])} <b class="again">${esc(Q.tryAgain)}</b>`);
+      feedback(`<b class="no">${esc(Q.wrong)}</b> <b class="again">${esc(Q.tryAgain)}</b>`);
+      hintPop(rockRound ? R[chip].hint : Q.processHints[A[t.key].process]);
       return;
     }
+    quiz.count++; quiz.streak++; updateMeter(true);
     if (rockRound) {
       quiz.done[chip] = true; quiz.done['n:' + t.key] = true;
       setNode(t.key, 'seen'); popNode(t.key);
@@ -447,7 +525,8 @@ export function createDiagram(api, ui, D, energy) {
       feedback(`<b class="ok">${esc(Q.roundDone)}</b>`);
       ROCK_KEYS.forEach(k => nodeEl(k).classList.remove('target'));
       const my = tk;
-      setTimeout(() => { if (my !== tk || !quiz) return; if (quiz.round < 3) { quiz.round++; showRound(); } else showScore(); }, 1500);
+      if (quiz.round < 3) setTimeout(() => { if (my === tk && quiz) { quiz.round++; showRound(); } }, 1500);
+      else complete();
     }
   }
   // dragging a name chip (or tap it, then tap a spot)
@@ -501,11 +580,30 @@ export function createDiagram(api, ui, D, energy) {
     if (t) attempt(quiz.sel, t);
   }
 
+  // ---------- the whole diagram is done: fireworks, a gold flash, then 5 questions ----------
+  function complete() {
+    const my = tk;
+    feedback(`<b class="ok">${esc(Q.completeTitle)}</b>`);
+    boxBtns.innerHTML = '';
+    ARROW_IDS.forEach(id => setArrow(id, 'live filled'));
+    const f = document.createElement('div'); f.className = 'dg-gold';
+    for (const k of ['left', 'top', 'width', 'height']) f.style[k] = svg.style[k];
+    wrap.insertBefore(f, svg);
+    setTimeout(() => f.remove(), 3000);
+    ROCK_KEYS.forEach((k, i) => setTimeout(() => { if (my === tk) popNode(k); }, 300 + i * 160));
+    ui.celebrate(Q.completeTitle, Q.completeSub, { dur: 3.6 });
+    setTimeout(() => {
+      if (my !== tk || !quiz) return;
+      ui.quiz.open({ title: Q.title, theme: 'teal', finishLabel: Q.questionsFinish, questions: Q.questions }, res => { if (my === tk && quiz) showScore(res); }, { noScore: true });
+    }, 3900);
+  }
+
   // ---------- the score screen (looks like the other quizzes, in neon teal) ----------
   function closeScore() { if (scoreBack) { scoreBack.remove(); scoreBack = null; } }
-  function showScore() {
+  function showScore(res = []) {
     const units = [...ROCK_KEYS.map(k => 'r:' + k), ...ARROW_IDS.map(id => 'x:' + id)];
-    const n = units.length, first = units.filter(u => !quiz.miss[u]).length, perfect = first === n, pct = Math.round(first / n * 100);
+    const dFirst = units.filter(u => !quiz.miss[u]).length, nQ = Q.questions.length, qFirst = res.filter(r => r === 'first').length;
+    const n = units.length + nQ, first = dFirst + qFirst, perfect = first === n, pct = Math.round(first / n * 100);
     ARROW_IDS.forEach(id => setArrow(id, 'live filled'));
     closeScore();
     scoreBack = document.createElement('div'); scoreBack.className = 'modal-back quiz-back';
@@ -518,14 +616,15 @@ export function createDiagram(api, ui, D, energy) {
           <p class="qz-big say"><b>${first}</b> ${esc(Q.outOf)} <b>${n}</b> ${esc(Q.firstTry)}</p>
           <span class="qz-pct${perfect ? ' perfect' : ''}" aria-label="${pct} percent">${pct}<small>%</small></span>
         </div>
+        <p class="dg-parts">${esc(Q.diagramPart)}: <b>${dFirst}/${units.length}</b> · ${esc(Q.questionsPart)}: <b>${qFirst}/${nQ}</b></p>
         <p class="say">${esc(perfect ? Q.perfectSub : Q.goodJob)}</p>
       </div>
       <div class="qz-next"><button class="qz-ghost" data-again>${esc(Q.again)}</button><button class="qz-go" data-done>${esc(Q.done)}</button></div></div>`;
     document.body.appendChild(scoreBack);
-    const done = () => { closeScore(); quiz = null; svg.classList.remove('quiz'); ROCK_KEYS.forEach(k => setNode(k, 'seen')); ui.setHud(D.hud); showEnd(false); ARROW_IDS.forEach(id => setArrow(id, 'seen')); };
+    const done = () => { closeScore(); hideMeter(); quiz = null; svg.classList.remove('quiz'); ROCK_KEYS.forEach(k => setNode(k, 'seen')); ui.setHud(D.hud); showEnd(false); ARROW_IDS.forEach(id => setArrow(id, 'seen')); };
     scoreBack.querySelector('[data-done]').onclick = done;
     scoreBack.querySelector('.qz-x').onclick = done;
-    scoreBack.querySelector('[data-again]').onclick = startQuiz;
+    scoreBack.querySelector('[data-again]').onclick = () => { closeScore(); startQuiz(); };
     if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
   }
 
@@ -541,7 +640,7 @@ export function createDiagram(api, ui, D, energy) {
     active = false; tk++; quiz = null; busy = false;
     movers.forEach(m => m.el.remove()); movers.length = 0;
     if (ghost) { ghost.remove(); ghost = null; }
-    closeScore(); wrap.hidden = true; box.hidden = true; ui.speech.stop();
+    closeScore(); closeHint(); hideMeter(); wrap.hidden = true; box.hidden = true; ui.speech.stop();
     document.body.classList.remove('mode-diagram');
     ui.updateInsets();                               // the menu bar is back: measure the 3D model's space again
   }

@@ -848,3 +848,64 @@ body.mode-diagram .story-btns button { min-height: 50px; }
 .story-btns button:disabled { opacity: .45; cursor: default; box-shadow: none; }
 .modal.quiz.t-teal { --q: 34,227,200; --qt: #9ff7ea; }
 @media (prefers-reduced-motion: reduce) { .dg * { animation: none !important; } }
+
+/* ---------- Diagram Quiz extras ---------- */
+/* the pieces students can drag: glowing, pulsing outline + little grip dots */
+.dg-chip { border-color: rgba(34,227,200,.7); animation: dgChipGlow 1.6s ease-in-out infinite; }
+.dg-chip::before { content: ''; flex: none; width: 10px; height: 20px; opacity: .75;
+  background: radial-gradient(circle, #fff 1.4px, transparent 1.7px) 0 0 / 5px 6.5px; }
+.dg-chip.proc::before { display: none; }
+@keyframes dgChipGlow {
+  0%, 100% { border-color: rgba(34,227,200,.6); box-shadow: 0 0 6px rgba(34,227,200,.3); }
+  50% { border-color: #6ff7e3; box-shadow: 0 0 0 3px rgba(34,227,200,.22), 0 0 22px rgba(34,227,200,.8); }
+}
+.dg-chip.sel { animation: none; border-color: #fff; box-shadow: 0 0 0 3px #22e3c8, 0 0 26px rgba(34,227,200,.9); }
+
+/* "7/15 completed" counter and hot streak */
+.dg-meter { display: flex; align-items: center; gap: 10px; margin: 0 auto; }
+.dg-count { --m: 34,227,200; font-weight: 800; font-size: 17px; padding: 4px 14px; border-radius: 999px; white-space: nowrap;
+  color: rgb(var(--m)); background: rgba(var(--m), .13); border: 2px solid rgb(var(--m)); box-shadow: 0 0 12px rgba(var(--m), .35); transition: color .3s, background .3s, border-color .3s; }
+.dg-count.lv1 { --m: 255,138,31; }
+.dg-count.lv2 { --m: 255,63,164; }
+.dg-count.lv3 { --m: 255,216,77; }
+.dg-count.bump { animation: dgBump .35s ease-out; }
+.dg-count.boom { animation: dgBoom 1s ease-out; }
+@keyframes dgBump { 40% { transform: scale(1.15); } }
+@keyframes dgBoom {
+  0% { transform: scale(1); }
+  22% { transform: scale(1.5); background: #fff; color: #10131a; box-shadow: 0 0 0 6px rgba(var(--m), .5), 0 0 50px 14px rgba(var(--m), .95); }
+  100% { transform: scale(1); }
+}
+.dg-streak { display: none; align-items: center; gap: 4px; font-weight: 800; font-size: 17px; white-space: nowrap;
+  color: #ff5a4a; text-shadow: 0 0 10px rgba(255,60,40,.9); animation: dgStreak 1s ease-in-out infinite; }
+.dg-streak i { font-style: normal; font-size: 20px; }
+.dg-streak.on { display: inline-flex; }
+.dg-streak.pop { animation: dgStreakPop .5s cubic-bezier(.2,1.6,.4,1), dgStreak 1s ease-in-out .5s infinite; }
+@keyframes dgStreak { 50% { color: #ff8a5a; text-shadow: 0 0 20px rgba(255,90,40,1), 0 0 4px #fff; } }
+@keyframes dgStreakPop { 0% { transform: scale(.4); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@media (max-width: 640px) { .dg-count, .dg-streak { font-size: 15px; } }
+
+/* the hint pop-up: a new color every time */
+.dg-hint-back { position: fixed; inset: 0; z-index: 75; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(4,6,12,.45); }
+.dg-hint { --h: 177,77,255; width: min(540px, 100%); border-radius: 24px; padding: 20px 24px; color: #fff;
+  background: radial-gradient(120% 80% at 0% 0%, rgba(var(--h), .38), transparent 62%), radial-gradient(90% 70% at 100% 100%, rgba(var(--h), .2), transparent 65%), rgba(16,14,24,.97);
+  border: 2px solid rgb(var(--h)); animation: popIn .3s cubic-bezier(.2,.9,.3,1.3), dgHintGlow 1.8s ease-in-out .3s infinite; }
+@keyframes dgHintGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(var(--h), .45), 0 20px 50px rgba(0,0,0,.55); }
+  50% { box-shadow: 0 0 44px rgba(var(--h), .9), 0 20px 50px rgba(0,0,0,.55); }
+}
+.dg-hint-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dg-hint h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 36px; line-height: 1.1; color: rgb(var(--h)); text-shadow: 0 0 16px rgba(var(--h), .6); display: flex; align-items: center; gap: 8px; }
+.dg-hint h3 i { font-style: normal; font-size: 30px; }
+.dg-hint-text { font-size: 22px; line-height: 1.4; font-weight: 700; margin: 14px 0 18px; }
+.dg-hint-go { width: 100%; min-height: 56px; border: 0; border-radius: 16px; cursor: pointer; font: inherit; font-size: 20px; font-weight: 800;
+  color: #14101c; background: rgb(var(--h)); box-shadow: 0 0 18px rgba(var(--h), .5); }
+
+/* the gold flash behind the finished diagram */
+.dg-gold { position: absolute; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255,236,140,.95), rgba(255,204,64,.6) 45%, rgba(255,190,40,0) 100%);
+  animation: dgGold 2.8s ease-out forwards; }
+@keyframes dgGold { 0% { opacity: 0; transform: scale(.6); } 18% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.3); } }
+.qz-score .dg-parts { font-size: 18px; color: #cfd8e6; margin: 2px 0 8px; }
+.qz-score .dg-parts b { color: var(--qt); }
+.dg .gcore { stroke-width: 3; }

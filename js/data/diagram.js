@@ -18,7 +18,9 @@
                is set in js/diagram.js.
    lesson      The guided lesson: the Big Circle (5 steps), then the
                Shortcuts (3 rules), then the end.
-   quiz        The drag-and-drop quiz (4 rounds) and its score screen.
+   checkpoints Questions that pop up during the lesson (in "lesson").
+   quiz        The drag-and-drop quiz (4 rounds), then 5 multiple choice
+               questions, and the score screen.
    ===================================================================== */
 window.DIAGRAM = {
   button: 'Rock Cycle Diagram',
@@ -78,7 +80,51 @@ window.DIAGRAM = {
       step: 'You did it!',
       text: 'You learned the whole rock cycle diagram! Tap any rock or arrow picture to see it again.'
     },
-    buttons: { start: 'Start', next: 'Next', quiz: 'Take the Diagram Quiz', again: 'Watch it again', back: 'Back to the Real World Rock Cycle' }
+    buttons: { start: 'Start', next: 'Next', quiz: 'Take the Diagram Quiz', again: 'Watch it again', back: 'Back to the Real World Rock Cycle' },
+
+    // Checkpoint questions pop up when students tap Next after these steps
+    // (steps are counted 1–8: Big Circle steps 1–5, then Shortcut rules 6–8).
+    // Same format as the quizzes: the right answer's number (counting from 0) goes in "correct".
+    checkpointTitle: 'Checkpoint!',
+    checkpointContinue: 'Continue',
+    checkpoints: [
+      { after: 2,
+        q: 'Which two steps turn sediment into sedimentary rock?',
+        answers: [
+          { text: 'Melting and cooling', why: 'Melting and cooling make igneous rock.' },
+          { text: 'Compacting and cementing' },
+          { text: 'Heat and pressure', why: 'Heat and pressure make metamorphic rock.' },
+          { text: 'Weathering and erosion', why: 'Weathering and erosion break rock into sediment.' }
+        ],
+        correct: 1,
+        explain: 'Sediment is squeezed together (compacting), then glued together (cementing). This makes sedimentary rock.' },
+      { after: 4,
+        q: 'True or False: Heat and pressure melt sedimentary rock into magma.',
+        answers: [
+          { text: 'True', why: 'Heat and pressure change rock without melting it. That makes metamorphic rock.' },
+          { text: 'False' }
+        ],
+        correct: 1,
+        explain: 'Heat and pressure change sedimentary rock into metamorphic rock, without melting it. Rock only turns into magma when it melts.' },
+      { after: 6,
+        q: 'True or False: Only igneous rock can be broken down into sediment.',
+        answers: [
+          { text: 'True', why: 'Any rock on the surface can be broken down by weathering and erosion.' },
+          { text: 'False' }
+        ],
+        correct: 1,
+        explain: 'Any rock on the surface can be broken down by weathering and erosion. Sedimentary rock and metamorphic rock can turn into sediment, too!' },
+      { after: 8,
+        q: 'Which kinds of rock can melt into magma?',
+        answers: [
+          { text: 'Only igneous rock', why: 'Igneous rock can melt, but it isn’t the only one.' },
+          { text: 'Only metamorphic rock', why: 'Metamorphic rock can melt, but it isn’t the only one.' },
+          { text: 'Any kind of rock, if it gets hot enough' },
+          { text: 'No rocks can melt', why: 'Rock melts into magma when it gets hot enough.' }
+        ],
+        correct: 2,
+        explain: 'Any kind of rock can melt into magma if it gets hot enough.' }
+    ]
   },
 
   quiz: {
@@ -91,6 +137,59 @@ window.DIAGRAM = {
       { chips: ['weather', 'compact', 'heatp', 'melt', 'cool'], text: 'Drag the process names onto the arrow pictures. You can use each name more than once!' }
     ],
     tip: 'Tip: you can also tap a name, then tap where it goes.',
+    counter: '{n}/{total} completed',
+    streak: 'Streak of {n}!',
+    hintTitles: ['Not quite!', 'So close!', 'Good try!', 'Almost!', 'Hmm, not yet!'],
+    hintButton: 'Try again',
+    completeTitle: 'Diagram complete!',
+    completeSub: 'Now answer 5 more questions.',
+    // after the diagram is finished: 5 multiple choice questions (same format as the other quizzes)
+    questionsFinish: 'See my score',
+    questions: [
+      { q: 'Which rock is made of layers of sediment that are pressed and glued together?',
+        answers: [
+          { text: 'Igneous rock', why: 'Igneous rock is made when magma cools and hardens.' },
+          { text: 'Sedimentary rock' },
+          { text: 'Metamorphic rock', why: 'Metamorphic rock is made by heat and pressure.' },
+          { text: 'Magma', why: 'Magma is melted, liquid rock.' }
+        ],
+        correct: 1,
+        explain: 'Sedimentary rock is made of layers of sediment that are compacted and cemented together.' },
+      { q: 'What is magma?',
+        answers: [
+          { text: 'Small pieces of rock, like sand', why: 'Small pieces of rock are called sediment.' },
+          { text: 'Rock with wavy, squeezed bands', why: 'Rock with wavy, squeezed bands is metamorphic rock.' },
+          { text: 'Melted, liquid rock deep underground' },
+          { text: 'Rock made of glued-together layers', why: 'Rock made of glued-together layers is sedimentary rock.' }
+        ],
+        correct: 2,
+        explain: 'Magma is melted rock — liquid rock — deep underground.' },
+      { q: 'How can igneous rock turn into metamorphic rock?',
+        answers: [
+          { text: 'Melting', why: 'Melting turns rock into magma.' },
+          { text: 'Cooling', why: 'Cooling turns magma into igneous rock.' },
+          { text: 'Compacting and cementing', why: 'Compacting and cementing turn sediment into sedimentary rock.' },
+          { text: 'Heat and pressure' }
+        ],
+        correct: 3,
+        explain: 'Deep underground, heat and pressure can change any rock into metamorphic rock — igneous rock, too!' },
+      { q: 'Sedimentary rock can become igneous rock. Which two steps would do it?',
+        answers: [
+          { text: 'Weathering, then erosion', why: 'Weathering and erosion turn rock into sediment.' },
+          { text: 'Melting, then cooling and hardening' },
+          { text: 'Compacting, then cementing', why: 'Compacting and cementing make sedimentary rock, not igneous rock.' },
+          { text: 'Heat and pressure, then weathering', why: 'Those steps make metamorphic rock, then sediment.' }
+        ],
+        correct: 1,
+        explain: 'First the sedimentary rock melts into magma. Then the magma cools and hardens into igneous rock.' },
+      { q: 'True or False: Any kind of rock can become any other kind of rock, depending on what processes it goes through.',
+        answers: [
+          { text: 'True' },
+          { text: 'False', why: 'Every kind of rock can change into every other kind. That is the rock cycle!' }
+        ],
+        correct: 0,
+        explain: 'That’s the big idea of the rock cycle! Any rock can become any other kind of rock, depending on what processes it goes through.' }
+    ],
     right: 'Correct!',
     wrong: 'Not quite.',
     tryAgain: 'Try again!',
@@ -107,6 +206,8 @@ window.DIAGRAM = {
     perfectTitle: 'Perfect score!',
     perfectSub: 'You completed the whole diagram on the first try!',
     goodJob: 'Good work! Try again to get a perfect score.',
+    diagramPart: 'Diagram',
+    questionsPart: 'Questions',
     outOf: 'out of',
     firstTry: 'right on the first try',
     again: 'Take the quiz again',

@@ -17,22 +17,24 @@ export function createQuiz(ui, Q) {
     if (closeHook) { const h = closeHook; closeHook = null; h(); }
   }
 
-  // open a quiz: key = 'realWorld' | 'sedimentary' | 'igneous'
+  // open a quiz: key = 'realWorld' | 'sedimentary' | 'igneous', or a set of questions (used by Diagram mode)
   // side: true = the quiz sits on the right, with the 3D model still showing on the left
-  function open(key, onDone, { side = false } = {}) {
-    const set = Q[key]; if (!set) return;
+  // noScore: true = no score screen; the last button (set.finishLabel) closes it and onDone gets the results
+  // noClose: true = no ✕ button (checkpoint questions must be answered)
+  function open(key, onDone, { side = false, noScore = false, noClose = false } = {}) {
+    const set = typeof key === 'string' ? Q[key] : key; if (!set) return;
     ui.closeModal(); close();
     const results = [];
     back = document.createElement('div'); back.className = 'modal-back quiz-back' + (side ? ' side' : '');
     document.body.appendChild(back);
     if (side && ui.quizSide) { ui.quizSide(true); closeHook = () => ui.quizSide(false); }
-    const finish = () => { close(); onDone && onDone(); };
+    const finish = () => { close(); onDone && onDone(results.slice()); };
 
     function frame(inner) {
       ui.speech.stop();
       back.innerHTML = `<div class="modal quiz t-${esc(set.theme || 'purple')}" role="dialog" aria-modal="true" aria-label="${esc(set.title)}">
-          <button class="close qz-x" aria-label="Close">✕</button>${inner}</div>`;
-      back.querySelector('.qz-x').onclick = finish;
+          ${noClose ? '' : '<button class="close qz-x" aria-label="Close">✕</button>'}${inner}</div>`;
+      const x = back.querySelector('.qz-x'); if (x) x.onclick = finish;
       const sb = back.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(back.querySelector('.qz-read'), sb);
     }
 
@@ -40,7 +42,7 @@ export function createQuiz(ui, Q) {
       const item = set.questions[i], n = set.questions.length;
       let tries = 0, done = false;
       frame(`
-        <div class="qz-top"><span class="qz-title">${esc(set.title)}</span><span class="qz-step">Question ${i + 1} of ${n}</span></div>
+        <div class="qz-top"><span class="qz-title">${esc(set.title)}</span>${n > 1 ? `<span class="qz-step">Question ${i + 1} of ${n}</span>` : ''}</div>
         <div class="qz-read">
           <div class="qz-qrow">${sayBtn()}</div>
           <h3 class="qz-q">${esc(item.q)}</h3>
@@ -51,8 +53,8 @@ export function createQuiz(ui, Q) {
       const fb = back.querySelector('.qz-fb'), nextEl = back.querySelector('.qz-next'), opts = [...back.querySelectorAll('.qopt')];
       const showNext = () => {
         const last = i === n - 1;
-        nextEl.innerHTML = `<button class="qz-go">${esc(last ? W.finish : W.next)}</button>`;
-        nextEl.querySelector('button').onclick = () => last ? score() : ask(i + 1);
+        nextEl.innerHTML = `<button class="qz-go">${esc(last ? (noScore && set.finishLabel) || W.finish : W.next)}</button>`;
+        nextEl.querySelector('button').onclick = () => last ? (noScore ? finish() : score()) : ask(i + 1);
       };
       opts.forEach(b => b.onclick = () => {
         if (done || b.disabled) return;
