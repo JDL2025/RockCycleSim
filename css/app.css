@@ -1077,3 +1077,7 @@ body.mode-rocks .dock, body.mode-rocks .banner, body.mode-rocks #labelsBtn { dis
 .rk-qfb.ok { color: #3ddc84; }
 .rk-qfb.no { color: #ff8a7a; }
 @media (orientation: portrait) { .rk-grid { grid-template-columns: repeat(3, 1fr); } .rk-card img { height: 84px; } }
+/* Rock Types Quiz: the question on the left, Read to me on the right */
+.rk-qrow { justify-content: space-between; align-items: center; gap: 12px; }
+.rk-qrow .qz-q { margin: 0; text-align: left; flex: 1; }
+.rk-qrow .say-btn { flex: none; }

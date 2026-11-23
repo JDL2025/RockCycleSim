@@ -79,7 +79,7 @@ Modes unlock in order, so students work through the lesson as a progression:
 - Locked modes and the locked Quiz button show a 🔒. Tapping them explains what to do. A newly unlocked mode glows until it’s opened. Students can always go back to modes they have unlocked. Steps played get a small ✓ in the menu bar.
 - **My Progress** (left menu): a progress bar for the 8 milestones (all 8 steps, each story and lesson, each quiz passed), the 8 step dots, and for each quiz the best score, last try and number of tries. The best score only goes up.
 - **Unlock all** (left menu, for the teacher): type the teacher password. It is kept private and is not written in these files (only a scrambled form is in `js/progress.js`). It unlocks every mode and quiz on that iPad (the button turns green), and has **Lock again** and **Erase this iPad’s progress** for testing.
-- Progress is saved on each iPad. **Add to Home Screen** (in My Progress and Help) shows step-by-step instructions. iPads don’t let a website add itself, and the Home Screen app keeps its own progress, separate from Safari, so students should add it first and always open it from the icon.
+- Progress is saved on each iPad. **Add to Home Screen** (in Help) shows step-by-step instructions. iPads don’t let a website add itself, and the Home Screen app keeps its own progress, separate from Safari, so students should add it first and always open it from the icon.
 - Pass scores: `js/data/quizzes.js` and `js/data/diagram.js` (`pass`). All the words: `js/data/progress.js`.
 
 ## Updating later

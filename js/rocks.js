@@ -344,7 +344,7 @@ export function createRocks(api, ui, R, energy) {
     quizBack.innerHTML = `<div class="modal quiz t-lime rk-quiz" role="dialog" aria-modal="true" aria-label="${esc(Q.title)}">
       <button class="close qz-x" aria-label="Close">✕</button>
       <div class="qz-top"><span class="qz-title">${esc(Q.title)}</span><span class="qz-step"></span></div>
-      <div class="qz-read"><div class="qz-qrow">${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}<h3 class="qz-q say"></h3></div>
+      <div class="qz-read"><div class="qz-qrow rk-qrow"><h3 class="qz-q say"></h3>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
         <p class="rk-qfb" aria-live="polite"></p>
         <div class="rk-grid">${grid.map(k => `<button class="rk-card" data-k="${k}"><img src="assets/rocks/${esc(R.rocks[k].photo.file)}" alt=""><span>${esc(R.rocks[k].name)}</span></button>`).join('')}</div></div>
       <div class="qz-next"></div></div>`;

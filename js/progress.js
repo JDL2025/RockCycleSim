@@ -169,9 +169,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
       ${RT ? section(4, 'rocks', `
         <div class="pg-row ${rocksDone() >= ROCK_KEYS.length ? 'done' : 'todo'}"><i class="pg-ic">${rocksDone() >= ROCK_KEYS.length ? '✓' : '○'}</i>
           <div class="pg-txt"><b>${esc(W.rows.rocksSort)}</b><span>${esc(fill(W.rows.rocksCount, { n: rocksDone() }))}</span></div></div>
-        ${quizRow('rocks', QUIZ.rocks.title)}`) : ''}
-      <button class="wide-btn ghost pg-home-btn" data-home>${standalone() ? '✓ ' : '📲 '}${esc(W.home.button)}</button>`;
-    body.querySelector('[data-home]').onclick = homeSteps;
+        ${quizRow('rocks', QUIZ.rocks.title)}`) : ''}`;
   }
 
   // ---------- teacher: Unlock all ----------
