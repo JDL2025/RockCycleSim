@@ -56,6 +56,8 @@ export function createUI(api) {
     insets.l = rail.right + 6; insets.t = Math.max(hud.bottom + 6, 70); insets.r = W - modes.left + 6;
     // Energy mode has no menu bar; leave room for the story box instead
     insets.b = document.body.classList.contains('mode-energy') ? Math.min(230, H * 0.3) : H - dock.top + 6;
+    // Rock Types mode: room for the 3 category boxes at the bottom (once they've appeared)
+    if (document.body.classList.contains('mode-rocks')) { const bins = document.getElementById('rkBins'); insets.b = bins && !bins.hidden ? H - bins.getBoundingClientRect().top + 8 : 24; }
     // Rock Cycle Quiz: the model shrinks into the space beside the quiz (left side), or above it on tall screens
     if (document.body.classList.contains('quiz-side')) {
       if (quizTall()) { insets.l = 12; insets.r = 12; insets.b = Math.round(H * 0.6) + 28; }
@@ -274,6 +276,7 @@ export function createUI(api) {
     <p><b>The idea:</b> inspired by the 3D rock cycle simulation on SciSim (scisim.org). Everything on this site was built new, for iPads.</p>
     <p><b>Ground and rock pictures:</b> real photos from Poly Haven (polyhaven.com), free to use (CC0). <b>Earth globe:</b> NASA Blue Marble (public domain).</p>
     <p><b>Music:</b> by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0. The songs have fun names on this site. Their real titles are: ${((window.MUSIC && window.MUSIC.songs) || []).map(x => `“${esc(x.original || x.name)}”`).join(', ')}.</p>
+    ${window.ROCK_TYPES ? `<p><b>Rock Types photos:</b> from Wikimedia Commons: ${Object.values(window.ROCK_TYPES.rocks).map(r => `${esc(r.name)} by ${esc(r.photo.by)} (<a href="${esc(r.photo.url)}" target="_blank" rel="noopener">${esc(r.photo.license)}</a>)`).join('; ')}. Photos were resized.</p>` : ''}
     <p><b>3D engine:</b> Three.js (MIT license). <b>Fonts:</b> Atkinson Hyperlegible and Big Shoulders Display (SIL Open Font License).</p>`;
   if ('requestFullscreen' in document.documentElement && !navigator.standalone) {
     $('#fullscreenBtn').hidden = false;

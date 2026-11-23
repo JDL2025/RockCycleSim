@@ -13,6 +13,8 @@
      Real World Rock Cycle  always open. Its Quiz opens after all 8 steps have been played.
      Energy                 opens after passing the Rock Cycle Quiz.
      Rock Cycle Diagram     opens after passing BOTH Energy quizzes.
+   Rock Types             opens after passing the Diagram Quiz.
+   (Rock Types Quiz pass score: js/data/rocktypes.js)
    Students can always go back to a mode they have unlocked.
    Progress is saved on each iPad.
 
@@ -23,7 +25,7 @@ window.PROGRESS = {
   title: 'My Progress',
   overall: '{n} of {total} milestones complete',
 
-  modes: { real: 'Real World Rock Cycle', energy: 'Energy', diagram: 'Rock Cycle Diagram' },
+  modes: { real: 'Real World Rock Cycle', energy: 'Energy', diagram: 'Rock Cycle Diagram', rocks: 'Rock Types' },
 
   // the rows in My Progress
   rows: {
@@ -32,6 +34,8 @@ window.PROGRESS = {
     sedStory: 'Sun Energy story',
     ignStory: 'Earth’s Heat story',
     diagramLesson: 'Diagram lesson',
+    rocksSort: 'Sort all 12 rocks',
+    rocksCount: '{n} of 12 sorted',
     storyDone: 'Done!',
     storyNot: 'Not done yet'
   },
@@ -48,7 +52,8 @@ window.PROGRESS = {
   lockedTitle: 'Locked',
   lockedMode: {
     energy: 'Pass the Rock Cycle Quiz to unlock Energy.',
-    diagram: 'Pass the Sun Energy Quiz and the Earth’s Heat Quiz to unlock the Rock Cycle Diagram.'
+    diagram: 'Pass the Sun Energy Quiz and the Earth’s Heat Quiz to unlock the Rock Cycle Diagram.',
+    rocks: 'Pass the Diagram Quiz to unlock Rock Types.'
   },
   lockedQuiz: 'Play all 8 steps in the menu bar first! You have played {n} of 8.',
   lockedOk: 'OK',

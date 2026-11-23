@@ -57,6 +57,13 @@ The end buttons go to the other story or back to the Real World Rock Cycle. Laye
   - The score counts all 20 (15 diagram pieces + 5 questions) right on the first try, with a big percentage, the two parts listed, and fireworks for a perfect score.
 - The 3D model rests (isn't drawn) while the diagram is showing, to save iPad battery.
 
+**Rock Types** (unlocks after passing the Diagram Quiz): 12 glowing crystals, each a different color and shape, sit on the 3D model where that rock really forms (obsidian and pumice on the volcano, basalt in the lava flow, granite in the igneous rock that cooled underground, sandstone under the river plain, limestone under the sea, coal in an old swamp layer, rock salt where an old sea dried up, marble/slate/gneiss/quartzite in the squeezed metamorphic rock).
+
+- Tap a crystal: a pop-up with a real photo, the kind of rock, how it forms, what it starts as (metamorphic rocks), where it's found, what it's used for, and a wow fact, with Read to me.
+- Then the crystal becomes a little cartoon rock (“Drag me!”). The 3 category boxes (Igneous, Sedimentary, Metamorphic) rise up at the bottom. A right drop flashes gold and the rock stays in the box with its name. A wrong drop flashes red, shakes, opens a hint pop-up, and the rock flies back. One rock at a time: the other crystals wait until it's sorted.
+- After all 12 (“12/12 sorted”): fireworks, then the **Rock Types Quiz** (neon lime): a grid of all 12 photos; tap 2 rocks of each kind (6 questions), pass with 4 of 6. Students can tap any sorted rock to read about it again, retake the quiz, or start over.
+- The 12 rocks: granite, basalt, obsidian, pumice (igneous); sandstone, limestone, coal, rock salt (sedimentary); marble, slate, gneiss, quartzite (metamorphic). Photos from Wikimedia Commons (credits on the About page and in `js/data/rocktypes.js`).
+
 ## Progress and unlocking
 
 Modes unlock in order, so students work through the lesson as a progression:
@@ -66,6 +73,7 @@ Modes unlock in order, so students work through the lesson as a progression:
 | Real World Rock Cycle | always open. Its **Quiz** button unlocks after all 8 steps have been played all the way through (any order). |
 | Energy | the student passes the **Rock Cycle Quiz** (6 of 8 right on the first try) |
 | Rock Cycle Diagram | the student passes **both** Energy quizzes (3 of 4 each) |
+| Rock Types | the student passes the **Diagram Quiz** (14 of 20) |
 
 - The Diagram Quiz passes at 14 of 20. Each milestone quiz starts with a **“Get ready!”** pop-up that says the score needed and what passing unlocks. The score screen says “You passed!” or how many are needed, announces anything newly unlocked, and has a **My Progress** button. Retakes mix up the answer order (not True/False).
 - Locked modes and the locked Quiz button show a 🔒. Tapping them explains what to do. A newly unlocked mode glows until it’s opened. Students can always go back to modes they have unlocked. Steps played get a small ✓ in the menu bar.
@@ -133,6 +141,9 @@ js/data/energy.js     Energy mode words (edit me)
 js/data/quizzes.js    quiz questions (edit me)
 js/data/diagram.js    Rock Cycle Diagram words and quiz (edit me)
 js/data/progress.js   My Progress, unlocking and Home Screen words (edit me)
+js/data/rocktypes.js  Rock Types facts, photo credits and quiz (edit me)
+js/rocks.js           Rock Types mode: crystals, pop-ups, sorting boxes, quiz
+assets/rocks/         the 12 rock photos
 js/progress.js        saved progress, locks, My Progress, Unlock all
 manifest.webmanifest  Home Screen app name and icon
 assets/tex/           ground and rock photo textures

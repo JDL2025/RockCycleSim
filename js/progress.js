@@ -12,7 +12,7 @@ const scramble = s => { let x = 5381; for (const c of ('rce:' + String(s).trim()
 const SAY_ICON = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
 const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
-export function createProgress(ui, W, QZ = {}, DG = null) {
+export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
   const esc = ui.esc, $ = s => document.querySelector(s);
   const RC = window.ROCK_CYCLE || {};
   const STEP_KEYS = RC.order || [];
@@ -24,10 +24,13 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
   if (QZ.realWorld) QUIZ.realWorld = { title: QZ.realWorld.title, theme: QZ.realWorld.theme || 'purple', n: QZ.realWorld.questions.length, need: QZ.realWorld.pass || QZ.realWorld.questions.length, next: 'energy' };
   if (QZ.sedimentary) QUIZ.sedimentary = { title: QZ.sedimentary.title, theme: QZ.sedimentary.theme || 'orange', n: QZ.sedimentary.questions.length, need: QZ.sedimentary.pass || QZ.sedimentary.questions.length, next: 'diagram' };
   if (QZ.igneous) QUIZ.igneous = { title: QZ.igneous.title, theme: QZ.igneous.theme || 'pink', n: QZ.igneous.questions.length, need: QZ.igneous.pass || QZ.igneous.questions.length, next: 'diagram' };
-  if (DG) QUIZ.diagram = { title: DG.quiz.title, theme: 'teal', n: 15 + DG.quiz.questions.length, need: DG.quiz.pass || 15 + DG.quiz.questions.length, next: null };
+  if (DG) QUIZ.diagram = { title: DG.quiz.title, theme: 'teal', n: 15 + DG.quiz.questions.length, need: DG.quiz.pass || 15 + DG.quiz.questions.length, next: RT ? 'rocks' : null };
+  if (RT) QUIZ.rocks = { title: RT.quiz.title, theme: 'lime', n: 6, need: RT.quiz.pass || 6, next: null };
+  const LAST = RT ? 'rocks' : 'diagram';                 // passing this quiz finishes everything
+  const ROCK_KEYS = RT ? Object.keys(RT.rocks) : [];
 
   // ---------- saved progress ----------
-  const blank = () => ({ steps: {}, stories: {}, lesson: false, quizzes: {}, teacher: false, fresh: {} });
+  const blank = () => ({ steps: {}, stories: {}, lesson: false, rocks: {}, quizzes: {}, teacher: false, fresh: {} });
   function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') return Object.assign(blank(), s); } catch (e) {} return blank(); }
   let S = load();
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} refresh(); }
@@ -38,23 +41,28 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
   const canQuiz = () => S.teacher || stepsDone() >= STEP_KEYS.length;
   const canEnter = m => S.teacher || m === 'real'
     || (m === 'energy' && passed('realWorld'))
-    || (m === 'diagram' && passed('sedimentary') && passed('igneous'));
-  const milestones = () => [stepsDone() >= STEP_KEYS.length, passed('realWorld'), !!S.stories.sedimentary, passed('sedimentary'), !!S.stories.igneous, passed('igneous'), !!S.lesson, passed('diagram')];
+    || (m === 'diagram' && passed('sedimentary') && passed('igneous'))
+    || (m === 'rocks' && passed('diagram'));
+  const rocksDone = () => ROCK_KEYS.filter(k => S.rocks && S.rocks[k]).length;
+  const milestones = () => [stepsDone() >= STEP_KEYS.length, passed('realWorld'), !!S.stories.sedimentary, passed('sedimentary'), !!S.stories.igneous, passed('igneous'), !!S.lesson, passed('diagram'),
+    ...(RT ? [rocksDone() >= ROCK_KEYS.length, passed('rocks')] : [])];
 
   // ---------- things students finish ----------
   function step(k) { if (!S.steps[k]) { S.steps[k] = true; save(); } }
   function story(kind) { if (!S.stories[kind]) { S.stories[kind] = true; save(); } }
   function lesson() { if (!S.lesson) { S.lesson = true; save(); } }
+  function rockSorted(k) { S.rocks = S.rocks || {}; if (!S.rocks[k]) { S.rocks[k] = true; save(); } }
+  function rocksReset() { S.rocks = {}; save(); }
   function entered(m) { if (S.fresh[m]) { delete S.fresh[m]; save(); } }
   const tries = key => (S.quizzes[key] && S.quizzes[key].tries) || 0;
   // a quiz was finished: keep the best score, and say what it unlocked (as HTML for the score screen)
   function recordQuiz(key, first, n) {
     const d = QUIZ[key]; if (!d) return { html: '' };
-    const before = { energy: canEnter('energy'), diagram: canEnter('diagram') }, wasPassed = passed(key);
+    const before = { energy: canEnter('energy'), diagram: canEnter('diagram'), rocks: canEnter('rocks') }, wasPassed = passed(key);
     const q = S.quizzes[key] || { best: 0, last: 0, tries: 0 };
     q.tries++; q.last = first; q.best = Math.max(q.best, first); q.n = n;
     S.quizzes[key] = q;
-    const unlocked = ['energy', 'diagram'].filter(m => !before[m] && canEnter(m));
+    const unlocked = ['energy', 'diagram', ...(RT ? ['rocks'] : [])].filter(m => !before[m] && canEnter(m));
     unlocked.forEach(m => { S.fresh[m] = true; });
     save();
     const ok = first >= d.need;
@@ -62,7 +70,7 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
       : `<p class="pg-pass no">${esc(fill(W.notPassed, { need: d.need, n: d.n }))}</p>`;
     if (!ok && wasPassed && W.alreadyPassed) html += `<p class="pg-pass soft">${esc(W.alreadyPassed)}</p>`;
     unlocked.forEach(m => { html += `<p class="pg-unlock"><i>🔓</i>${esc(fill(W.unlockedNow, { mode: W.modes[m] }))}</p>`; });
-    if (key === 'diagram' && ok) html += `<p class="pg-unlock gold"><i>🏆</i>${esc(W.allDone)}</p>`;
+    if (key === LAST && ok) html += `<p class="pg-unlock gold"><i>🏆</i>${esc(W.allDone)}</p>`;
     return { passed: ok, unlocked, html };
   }
 
@@ -158,6 +166,10 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
         ${doneRow(!!S.stories.igneous, W.rows.ignStory)}
         ${quizRow('igneous', QUIZ.igneous ? QUIZ.igneous.title : '')}`)}
       ${DG ? section(3, 'diagram', `${doneRow(!!S.lesson, W.rows.diagramLesson)}${quizRow('diagram', QUIZ.diagram.title)}`) : ''}
+      ${RT ? section(4, 'rocks', `
+        <div class="pg-row ${rocksDone() >= ROCK_KEYS.length ? 'done' : 'todo'}"><i class="pg-ic">${rocksDone() >= ROCK_KEYS.length ? '✓' : '○'}</i>
+          <div class="pg-txt"><b>${esc(W.rows.rocksSort)}</b><span>${esc(fill(W.rows.rocksCount, { n: rocksDone() }))}</span></div></div>
+        ${quizRow('rocks', QUIZ.rocks.title)}`) : ''}
       <button class="wide-btn ghost pg-home-btn" data-home>${standalone() ? '✓ ' : '📲 '}${esc(W.home.button)}</button>`;
     body.querySelector('[data-home]').onclick = homeSteps;
   }
@@ -223,6 +235,6 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
   }, true);
 
   refresh();
-  return { step, story, lesson, entered, recordQuiz, tries, canQuiz, canEnter, explainLock, explainQuizLock, passIntro,
+  return { step, story, lesson, entered, recordQuiz, rockSorted, rocksReset, rocksSorted: () => Object.assign({}, S.rocks), tries, canQuiz, canEnter, explainLock, explainQuizLock, passIntro,
     hasPass: key => !!QUIZ[key], openPanel, refresh, homeSteps, state: () => JSON.parse(JSON.stringify(S)) };
 }

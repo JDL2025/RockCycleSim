@@ -987,3 +987,93 @@ body.mode-diagram .story-btns button { min-height: 50px; }
 .pg-unlock.gold { color: #fff1a8; background: linear-gradient(90deg, rgba(255,216,77,.25), rgba(255,138,31,.2)); }
 /* the teacher code box: masked with dots, but not a password field (so password managers ignore it) */
 .pg-t-form .pg-code { -webkit-text-security: disc; text-security: disc; }
+
+/* =====================================================================
+   Rock Types mode
+   ===================================================================== */
+body.mode-rocks .dock, body.mode-rocks .banner, body.mode-rocks #labelsBtn { display: none !important; }
+.modal.quiz.t-lime { --q: 198,244,50; --qt: #ecffa8; }
+.pg-score.t-lime { --q: 198,244,50; }
+
+/* the 3 category boxes */
+#rkBins { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 21; width: min(1080px, calc(100vw - 20px)); }
+#rkBins[hidden] { display: none; }
+.rk-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 4px 6px; min-height: 36px; }
+.rk-count { font-weight: 800; font-size: 17px; padding: 5px 14px; border-radius: 999px; color: #ffd84d; background: rgba(255,216,77,.12); border: 2px solid rgba(255,216,77,.6); }
+.rk-actions { display: flex; gap: 8px; }
+.rk-btn { min-height: 44px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--dusk-2); color: var(--ink); font: inherit; font-weight: 800; font-size: 16px; cursor: pointer; }
+.rk-btn.go { border: 0; color: #14101c; background: linear-gradient(135deg, #c6f432, #ecffa8); box-shadow: 0 0 18px rgba(198,244,50,.5); animation: dgChipGlowLime 1.6s ease-in-out infinite; }
+@keyframes dgChipGlowLime { 50% { box-shadow: 0 0 0 3px rgba(198,244,50,.3), 0 0 26px rgba(198,244,50,.85); } }
+.rk-bins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.rk-bin { position: relative; border-radius: 18px; padding: 8px 10px 10px; background: rgba(14,19,30,.92); border: 2px solid var(--k); box-shadow: 0 8px 24px rgba(0,0,0,.45); overflow: hidden; transition: transform .2s; }
+.rk-bin::before { content: ''; position: absolute; inset: 0; background: var(--k); opacity: .1; pointer-events: none; }
+.rk-bin-head { position: relative; display: flex; flex-direction: column; margin-bottom: 6px; }
+.rk-bin-head b { font-family: var(--display); font-size: 24px; line-height: 1; color: var(--k); letter-spacing: .02em; }
+.rk-bin-head span { font-size: 13px; color: var(--ink-dim); line-height: 1.25; margin-top: 2px; }
+.rk-slots { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rk-slot { height: 66px; border-radius: 12px; border: 2px dashed rgba(255,255,255,.18); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.rk-slot.full { border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); cursor: pointer; }
+.rk-slot .rk-ico { width: 40px; height: 40px; }
+.rk-slot span { font-size: 12.5px; font-weight: 800; line-height: 1.1; text-align: center; }
+.rk-slot.pop { animation: rkSlotPop .7s cubic-bezier(.2,1.6,.4,1); }
+@keyframes rkSlotPop { 0% { transform: scale(.3); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.rk-bin.hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 0 0 3px var(--k), 0 0 26px var(--k); }
+.rk-bin.gold { animation: rkGold 1.1s ease-out; }
+@keyframes rkGold { 0% { box-shadow: 0 0 0 0 #ffd84d; } 20% { background: rgba(255,216,77,.55); box-shadow: 0 0 0 5px #ffd84d, 0 0 60px 16px rgba(255,216,77,.95); border-color: #fff1a8; } 100% { box-shadow: 0 8px 24px rgba(0,0,0,.45); } }
+.rk-bin.bad { animation: rkBad .6s ease-in-out; }
+@keyframes rkBad { 0% { transform: none; } 15% { background: rgba(255,60,60,.6); box-shadow: 0 0 0 4px #ff3b3b, 0 0 40px rgba(255,60,60,.9); transform: translateX(-10px); } 35% { transform: translateX(10px); } 55% { transform: translateX(-8px); } 75% { transform: translateX(6px); } 100% { transform: none; } }
+#rkBins.enter .rk-bin { animation: rkIn .8s cubic-bezier(.2,1.3,.4,1) both; }
+#rkBins.enter .rk-bin:nth-child(2) { animation-delay: .15s; }
+#rkBins.enter .rk-bin:nth-child(3) { animation-delay: .3s; }
+#rkBins.enter .rk-bar { animation: rkIn .6s ease-out .45s both; }
+@keyframes rkIn { 0% { transform: translateY(140px) scale(.7); opacity: 0; } 60% { opacity: 1; box-shadow: 0 0 0 3px var(--k, #fff), 0 0 50px var(--k, #fff); } 100% { transform: none; opacity: 1; } }
+@media (max-width: 700px) { .rk-bin-head span { display: none; } .rk-slot { height: 58px; } .rk-slot .rk-ico { width: 32px; height: 32px; } }
+
+/* the cartoon rock you drag */
+.rk-drag { --g: #fff; position: fixed; z-index: 60; transform: translate(-50%, -50%); width: 84px; display: flex; flex-direction: column; align-items: center; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.rk-drag .rk-ico { width: 72px; height: 72px; filter: drop-shadow(0 0 10px var(--g)) drop-shadow(0 0 3px var(--g)); animation: rkBob 1.2s ease-in-out infinite; }
+@keyframes rkBob { 50% { transform: translateY(-5px) scale(1.06); } }
+.rk-drag .rk-name { margin-top: -4px; padding: 2px 9px; border-radius: 999px; background: rgba(10,14,22,.88); font-weight: 800; font-size: 15px; white-space: nowrap; border: 1px solid var(--g); }
+.rk-drag .rk-tag { position: absolute; bottom: 100%; margin-bottom: 2px; padding: 4px 10px; border-radius: 10px; background: #ffd84d; color: #1a1406; font-style: normal; font-weight: 900; font-size: 15px; white-space: nowrap; animation: rkTag 1s ease-in-out infinite; }
+@keyframes rkTag { 50% { transform: translateY(-4px); } }
+.rk-drag.lifted { cursor: grabbing; }
+.rk-drag.lifted .rk-ico { animation: none; transform: scale(1.18); }
+.rk-drag.lifted .rk-tag { display: none; }
+.rk-drag.appear { animation: rkAppear .7s cubic-bezier(.2,1.6,.4,1); }
+@keyframes rkAppear { 0% { transform: translate(-50%, -50%) scale(.2) rotate(-30deg); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+.rk-drag.nudge .rk-ico { animation: rkNudge .5s ease-in-out; }
+@keyframes rkNudge { 25% { transform: scale(1.3) rotate(-10deg); } 75% { transform: scale(1.3) rotate(10deg); } }
+.rk-drag.into { transition: opacity .3s; opacity: .6; }
+
+/* the rock pop-up */
+.rk-back { z-index: 70; }
+.rk-pop { --g: #fff; --k: #fff; position: relative; width: min(820px, 94vw); max-height: 92vh; overflow: auto; display: grid; grid-template-columns: 1fr 1.1fr; border-radius: 26px;
+  background: radial-gradient(120% 80% at 0% 0%, rgba(255,255,255,.07), transparent 60%), rgba(16,20,30,.98); border: 2px solid var(--g);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 40px var(--g), 0 24px 60px rgba(0,0,0,.6); animation: popIn .35s cubic-bezier(.2,.9,.3,1.25); }
+.rk-pop > .close { position: absolute; top: 10px; right: 10px; z-index: 2; }
+.rk-photo { position: relative; background: #0b0f16; display: flex; align-items: center; justify-content: center; min-height: 260px; padding: 14px; }
+.rk-photo img { max-width: 100%; max-height: 380px; border-radius: 14px; object-fit: contain; }
+.rk-credit { position: absolute; left: 10px; bottom: 6px; font-size: 11px; color: rgba(255,255,255,.55); }
+.rk-body { padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 6px; }
+.rk-head { display: flex; align-items: center; gap: 12px; padding-right: 40px; }
+.rk-head h2 { margin: 0; font-family: var(--display); font-size: 44px; line-height: 1; color: #fff; text-shadow: 0 0 18px var(--g); }
+.rk-kind { align-self: flex-start; margin: 2px 0 6px; padding: 4px 14px; border-radius: 999px; font-weight: 900; font-size: 18px; color: #10131a; background: var(--k); }
+.rk-row { display: flex; gap: 10px; align-items: flex-start; }
+.rk-row i { font-style: normal; font-size: 22px; line-height: 1.3; flex: none; }
+.rk-row p { margin: 0; font-size: 18.5px; line-height: 1.4; }
+.rk-row p b { color: #ffd84d; }
+.rk-go { margin-top: 10px; min-height: 56px; border: 0; border-radius: 16px; cursor: pointer; font: inherit; font-size: 20px; font-weight: 900; color: #10131a; background: var(--g); box-shadow: 0 0 18px var(--g); }
+@media (orientation: portrait), (max-width: 760px) { .rk-pop { grid-template-columns: 1fr; } .rk-photo img { max-height: 260px; } .rk-head h2 { font-size: 38px; } }
+
+/* the Rock Types Quiz grid */
+.modal.quiz.rk-quiz { width: min(900px, 96vw); }
+.rk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+.rk-card { --k: #fff; position: relative; padding: 0 0 6px; border-radius: 14px; overflow: hidden; cursor: pointer; border: 2px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: var(--ink); font: inherit; font-weight: 800; font-size: 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rk-card img { width: 100%; height: 92px; object-fit: cover; background: #0b0f16; }
+.rk-card.right { border-color: var(--k); box-shadow: 0 0 0 2px var(--k), 0 0 18px var(--k); cursor: default; }
+.rk-card.right::after { content: '✓'; position: absolute; top: 6px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--k); color: #10131a; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.rk-card.wrong { border-color: #ff5a5a; animation: dgShakeX .45s; }
+.rk-qfb { min-height: 28px; margin: 4px 0 0; font-size: 19px; font-weight: 800; }
+.rk-qfb.ok { color: #3ddc84; }
+.rk-qfb.no { color: #ff8a7a; }
+@media (orientation: portrait) { .rk-grid { grid-template-columns: repeat(3, 1fr); } .rk-card img { height: 84px; } }
