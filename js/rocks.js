@@ -129,6 +129,7 @@ export function createRocks(api, ui, R, energy) {
     gems[k] = { key: k, g, meshes, glow, stars, pos, color, phase: i * 1.7, base: pos[1] };
   });
 
+  const cv = api.renderer.domElement;
   // ---------- state ----------
   let active = false, mode = 'learn', current = null, popup = null, quizBack = null, lastHint = -1, tk = 0;
   const P = () => ui.progress;
@@ -140,10 +141,36 @@ export function createRocks(api, ui, R, energy) {
     for (const k of KEYS) {
       const gm = gems[k];
       const sortedNow = !!s[k], review = mode === 'review';
-      gm.g.visible = review || (!sortedNow && current !== k);
+      gm.g.visible = !sortedNow && current !== k;              // a sorted rock shows as its cartoon on the map instead
       gm.dim = !review && !!current && current !== k;
+      const pin = pins[k], was = !pin.hidden;
+      pin.hidden = !sortedNow;
+      pin.classList.toggle('dim', !!current && current !== k);
+      if (sortedNow && !was && active) { placePin(k); pin.classList.remove('appear'); void pin.offsetWidth; pin.classList.add('appear'); }
     }
     api.requestRender();
+  }
+
+  // ---------- sorted rocks: the cartoon rock sits where its crystal was; tap it to read the card again ----------
+  const mapEl = document.createElement('div'); mapEl.id = 'rkMap'; mapEl.hidden = true;
+  const pins = {};
+  KEYS.forEach(k => {
+    const b = document.createElement('button'); b.className = 'rk-pin'; b.hidden = true; b.dataset.k = k;
+    b.style.setProperty('--g', gems[k].color); b.style.setProperty('--k', R.kinds[R.rocks[k].kind].color);
+    b.setAttribute('aria-label', R.rocks[k].name);
+    b.innerHTML = rockIcon(k); b.title = R.rocks[k].name;
+    b.onclick = () => {
+      if (!active || popup || quizBack) return;
+      if (mode === 'learn' && current) { ui.setHud(R.hudBusy); pulseIcon(); return; }
+      openPopup(k);
+    };
+    mapEl.appendChild(b); pins[k] = b;
+  });
+  document.body.appendChild(mapEl);
+  function placePin(k) {
+    const gm = gems[k], pin = pins[k], r = cv.getBoundingClientRect(), p = api.project([gm.g.position.x, gm.base, gm.g.position.z]);
+    pin.style.visibility = p.ok ? '' : 'hidden';
+    pin.style.left = r.left + p.x + 'px'; pin.style.top = r.top + p.y + 'px';
   }
   api.frameHooks.add((rdt, sdt, now) => {
     if (!active) return;
@@ -162,10 +189,11 @@ export function createRocks(api, ui, R, energy) {
       });
     }
     if (iconEl && !dragging && !flying) placeIcon();
+    for (const k of KEYS) if (!pins[k].hidden) placePin(k);
   });
 
   // ---------- tapping a crystal ----------
-  const cv = api.renderer.domElement; let down = null;
+  let down = null;
   cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
   cv.addEventListener('pointerup', e => {
     if (!active || !down) return;
@@ -307,6 +335,7 @@ export function createRocks(api, ui, R, energy) {
       fillBins();
       const sl = [...bin.querySelectorAll('.rk-slot')].find(s => s.dataset.rock === k); if (sl) { sl.classList.add('pop'); }
       setGemStates();
+      const pr = pins[k].getBoundingClientRect(); if (pr.width) ui.burst(pr.left + pr.width / 2, pr.top + pr.height / 2, true, gems[k].color);
       if (sortedCount() === KEYS.length) allSorted(); else ui.setHud(R.hud);
     }, 300);
   }
@@ -398,7 +427,7 @@ export function createRocks(api, ui, R, energy) {
     if (active) return;
     active = true; tk++;
     document.body.classList.add('mode-rocks');
-    api.hideLabels = true; api.awake = true; group.visible = true;
+    api.hideLabels = true; api.awake = true; group.visible = true; mapEl.hidden = false;
     if (api.grain && api.grain.scale) api.grain.scale(0.001);
     current = null; mode = sortedCount() === KEYS.length ? 'review' : 'learn';
     fillBins(); setGemStates();
@@ -410,7 +439,7 @@ export function createRocks(api, ui, R, energy) {
     if (!active) return;
     active = false; tk++;
     closePopup(); closeQuiz(); removeIcon(); current = null;
-    group.visible = false; bins.hidden = true;
+    group.visible = false; bins.hidden = true; mapEl.hidden = true;
     document.body.classList.remove('mode-rocks');
     api.hideLabels = false;
     if (api.grain && api.grain.scale) api.grain.scale(1);
@@ -420,6 +449,6 @@ export function createRocks(api, ui, R, energy) {
   window.addEventListener('resize', () => { if (active) requestAnimationFrame(() => ui.updateInsets()); });
 
   // where each crystal is on the screen right now (used by the site's tests)
-  const gemScreen = () => KEYS.map(k => { const gm = gems[k], r = cv.getBoundingClientRect(), p = api.project([gm.g.position.x, gm.g.position.y, gm.g.position.z]); return { k, kind: R.rocks[k].kind, x: r.left + p.x, y: r.top + p.y, vis: gm.g.visible, dim: !!gm.dim }; });
+  const gemScreen = () => KEYS.map(k => { const gm = gems[k], r = cv.getBoundingClientRect(), p = api.project([gm.g.position.x, gm.g.position.y, gm.g.position.z]); return { k, kind: R.rocks[k].kind, x: r.left + p.x, y: r.top + p.y, vis: gm.g.visible, dim: !!gm.dim, pin: !pins[k].hidden }; });
   return { enter, leave, isActive: () => active, openPopup, runQuiz, gemScreen, state: () => ({ current, mode, sorted: sortedCount(), dragging, popup: !!popup }) };
 }
