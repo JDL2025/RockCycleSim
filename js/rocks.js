@@ -130,7 +130,7 @@ export function createRocks(api, ui, R, energy) {
   });
 
   // ---------- state ----------
-  let active = false, mode = 'learn', current = null, popup = null, quizBack = null, hintBack = null, lastHint = -1, tk = 0;
+  let active = false, mode = 'learn', current = null, popup = null, quizBack = null, lastHint = -1, tk = 0;
   const P = () => ui.progress;
   const sorted = () => (P() ? P().rocksSorted() : {});
   const sortedCount = () => KEYS.filter(k => sorted()[k]).length;
@@ -185,22 +185,26 @@ export function createRocks(api, ui, R, energy) {
 
   // ---------- the rock pop-up ----------
   function closePopup() { if (popup) { popup.remove(); popup = null; ui.speech.stop(); } }
-  function openPopup(k) {
+  // retry = the student just dropped this rock in the wrong box: its card comes back with a message on top
+  function openPopup(k, retry = false) {
     closePopup();
     const rk = R.rocks[k], kd = R.kinds[rk.kind], Lb = R.labels, review = mode === 'review' || !!sorted()[k];
     popup = document.createElement('div'); popup.className = 'modal-back rk-back';
-    const row = (ic, label, text) => text ? `<div class="rk-row"><i>${ic}</i><p class="say"><b>${esc(label)}:</b> ${esc(text)}</p></div>` : '';
+    const row = (ic, label, text, cls = '') => text ? `<div class="rk-row${cls}"><i>${ic}</i><p class="say"><b>${esc(label)}:</b> ${esc(text)}</p></div>` : '';
+    let rc = '';
+    if (retry) { let i; do { i = Math.floor(Math.random() * RETRY_COLORS.length); } while (i === lastHint); lastHint = i; rc = RETRY_COLORS[i]; }
     popup.innerHTML = `<div class="rk-pop" role="dialog" aria-modal="true" aria-label="${esc(rk.name)}" style="--g:${gems[k].color};--k:${kd.color}">
       <button class="close" aria-label="Close">✕</button>
       <div class="rk-photo"><img src="assets/rocks/${esc(rk.photo.file)}" alt="${esc(rk.name)}"><span class="rk-credit">${esc(R.photoBy)}: ${esc(rk.photo.by)} · ${esc(rk.photo.license)}</span></div>
       <div class="rk-body">
+        ${retry ? `<div class="rk-retry say" style="--h:${rc}"><b>💡 ${esc(R.retryTitles[Math.floor(Math.random() * R.retryTitles.length)])}</b> ${esc(R.retryText)}</div>` : ''}
         <div class="rk-head"><h2 class="say">${esc(rk.name)}</h2>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
-        <p class="rk-kind say">${esc(kd.name)} rock</p>
-        ${row('🔥', Lb.forms, rk.forms)}${row('🔄', Lb.startsAs, rk.startsAs)}${row('📍', Lb.found, rk.found)}${row('🛠️', Lb.used, rk.used)}${row('⭐', Lb.wow, rk.wow)}
-        <button class="rk-go">${esc(review ? R.popupButtonReview : R.popupButton)}</button>
+        ${review ? `<p class="rk-kind say">${esc(kd.name)} rock</p>` : `<p class="rk-nudge say">${esc(R.nudge)}</p>`}
+        ${row('🔥', Lb.forms, rk.forms, retry ? ' clue' : '')}${review ? row('🔄', Lb.startsAs, rk.startsAs) : ''}${row('📍', Lb.found, rk.found)}${row('🛠️', Lb.used, rk.used)}${row('⭐', Lb.wow, rk.wow)}
+        <button class="rk-go">${esc(retry ? R.retryButton : review ? R.popupButtonReview : R.popupButton)}</button>
       </div></div>`;
     document.body.appendChild(popup);
-    const done = () => { closePopup(); if (!review) makeIcon(k); };
+    const done = () => { closePopup(); if (!review && !retry) makeIcon(k); };
     popup.querySelector('.rk-go').onclick = done;
     popup.querySelector('.close').onclick = done;
     const sb = popup.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(popup.querySelector('.rk-body'), sb);
@@ -251,7 +255,7 @@ export function createRocks(api, ui, R, energy) {
 
   // ---------- the 3 category boxes at the bottom ----------
   const bins = document.createElement('div'); bins.id = 'rkBins'; bins.hidden = true;
-  bins.innerHTML = `<div class="rk-bar"><span class="rk-count"></span><span class="rk-actions"></span></div>
+  bins.innerHTML = `<div class="rk-bar"><span class="rk-count"></span><span class="rk-fb" aria-live="polite"></span><span class="rk-actions"></span></div>
     <div class="rk-bins">${KINDS.map(k => `<div class="rk-bin" data-kind="${k}" style="--k:${R.kinds[k].color}">
       <div class="rk-bin-head"><b>${esc(R.kinds[k].name)}</b><span>${esc(R.kinds[k].about)}</span></div>
       <div class="rk-slots">${[0, 1, 2, 3].map(() => '<div class="rk-slot"></div>').join('')}</div></div>`).join('')}</div>`;
@@ -290,6 +294,9 @@ export function createRocks(api, ui, R, energy) {
     const k = current, kind = R.rocks[k].kind, my = tk;
     flash(bin, 'gold');
     const r = bin.getBoundingClientRect(); ui.burst(r.left + r.width / 2, r.top + 30, false, '#ffd84d');
+    const fb = bins.querySelector('.rk-fb');                  // "Correct! Obsidian is igneous." (the kind in its color)
+    fb.innerHTML = esc(fill(R.right, { name: R.rocks[k].name, kind: '\u0001' })).replace('\u0001', `<b style="color:${R.kinds[kind].color}">${esc(kindName(kind))}</b>`);
+    fb.classList.remove('show'); void fb.offsetWidth; fb.classList.add('show');
     const slot = [...bin.querySelectorAll('.rk-slot')].find(s => !s.classList.contains('full'));
     const sr = (slot || bin).getBoundingClientRect();
     iconEl.classList.add('into');
@@ -306,23 +313,11 @@ export function createRocks(api, ui, R, energy) {
   function wrong(bin) {
     flash(bin, 'bad');
     if (P()) P().rockMiss(current);                             // for "sorted on the first try" on the finish screen
+    const k = current, my = tk;
     flyTo(iconHome(), null, 450);
-    hintPop(fill(R.hint, { forms: R.rocks[current].forms }));
+    setTimeout(() => { if (my === tk && current === k) openPopup(k, true); }, 650);   // the rock's card pops up again to re-read
   }
-  const HINT_COLORS = ['177,77,255', '255,138,31', '255,63,164', '34,227,200', '79,195,247', '198,244,50', '255,216,77'];
-  function closeHint() { if (hintBack) { hintBack.remove(); hintBack = null; ui.speech.stop(); } }
-  function hintPop(text) {
-    closeHint();
-    let i; do { i = Math.floor(Math.random() * HINT_COLORS.length); } while (i === lastHint); lastHint = i;
-    hintBack = document.createElement('div'); hintBack.className = 'dg-hint-back';
-    hintBack.innerHTML = `<div class="dg-hint" role="alertdialog" aria-modal="true" style="--h:${HINT_COLORS[i]}">
-      <div class="dg-hint-top"><h3><i>💡</i>${esc(R.hintTitles[Math.floor(Math.random() * R.hintTitles.length)])}</h3>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
-      <p class="dg-hint-text say">${esc(text)}</p><button class="dg-hint-go">${esc(R.hintButton)}</button></div>`;
-    document.body.appendChild(hintBack);
-    hintBack.querySelector('.dg-hint-go').onclick = closeHint;
-    hintBack.addEventListener('click', e => { if (e.target === hintBack) closeHint(); });
-    const sb = hintBack.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(hintBack.querySelector('.dg-hint-text'), sb);
-  }
+  const RETRY_COLORS = ['177,77,255', '255,138,31', '255,63,164', '34,227,200', '79,195,247', '198,244,50', '255,216,77'];
 
   function allSorted() {
     const my = tk;
@@ -414,7 +409,7 @@ export function createRocks(api, ui, R, energy) {
   function leave() {
     if (!active) return;
     active = false; tk++;
-    closePopup(); closeHint(); closeQuiz(); removeIcon(); current = null;
+    closePopup(); closeQuiz(); removeIcon(); current = null;
     group.visible = false; bins.hidden = true;
     document.body.classList.remove('mode-rocks');
     api.hideLabels = false;

@@ -7,11 +7,18 @@
    rocks     The 12 rocks. For each rock:
                kind     'igneous', 'sedimentary' or 'metamorphic'
                forms    how it forms
-               startsAs (metamorphic rocks only) the rock it started as
+               startsAs (metamorphic rocks only) the rock it started as;
+                        shown only after the rock is sorted, so it isn't a giveaway
                found    where it is found
                used     what people use it for
                wow      a cool fact
                photo    the photo file in assets/rocks/, and its credit
+             The pop-up does NOT say the kind of rock until it's sorted.
+             The "forms" sentence is the clue, so it uses the same words
+             as the category boxes:
+               igneous      magma or lava ... cooled and hardened
+               sedimentary  layers / pieces ... pressed together, cemented
+               metamorphic  heated and squeezed ... without melting
              Where each crystal sits on the 3D model is set in js/rocks.js.
    kinds     The 3 category boxes: name and color.
    quiz      The Rock Types Quiz: tap 2 rocks of each kind (6 questions).
@@ -36,22 +43,23 @@ window.ROCK_TYPES = {
   popupButtonReview: 'Close',
   photoBy: 'Photo',
 
-  // wrong box: the hint pop-up
-  hintTitles: ['Not quite!', 'So close!', 'Good try!', 'Almost!', 'Hmm, not yet!'],
-  hint: 'Remember: {forms} Which kind of rock forms that way?',
-  hintButton: 'Try again',
-  right: 'Correct!',
+  nudge: '🔍 Read how it formed. That’s your clue!',
+  // wrong box: the rock's card pops up again with this message on top
+  retryTitles: ['Not quite!', 'So close!', 'Good try!', 'Almost!', 'Hmm, not yet!'],
+  retryText: 'Read how it formed again, then try another box!',
+  retryButton: 'Try again',
+  right: 'Correct! {name} is {kind}.',
 
   kinds: {
     igneous:     { name: 'Igneous',     color: '#ff3b3b', about: 'Made when magma or lava cools and hardens' },
-    sedimentary: { name: 'Sedimentary', color: '#3ddc84', about: 'Made when sediment is pressed and cemented together' },
-    metamorphic: { name: 'Metamorphic', color: '#b16cff', about: 'Made when rock is changed by heat and pressure' }
+    sedimentary: { name: 'Sedimentary', color: '#3ddc84', about: 'Made when layers of pieces are pressed and cemented together' },
+    metamorphic: { name: 'Metamorphic', color: '#b16cff', about: 'Made when rock is heated and squeezed, without melting' }
   },
 
   rocks: {
     granite: {
       name: 'Granite', kind: 'igneous',
-      forms: 'Magma cooled slowly, deep underground. That gave it big crystals you can see.',
+      forms: 'Magma cooled and hardened slowly, deep underground. That gave it big crystals you can see.',
       found: 'Deep underground. It shows up in mountains when the rock above it wears away.',
       used: 'Kitchen countertops, buildings, and monuments.',
       wow: 'Mount Rushmore is carved into granite!',
@@ -59,7 +67,7 @@ window.ROCK_TYPES = {
     },
     basalt: {
       name: 'Basalt', kind: 'igneous',
-      forms: 'Lava cooled quickly on Earth’s surface. Gas bubbles can leave little holes in it.',
+      forms: 'Lava cooled and hardened quickly on Earth’s surface. Gas bubbles can leave little holes in it.',
       found: 'Lava flows, Hawaii, and most of the ocean floor.',
       used: 'Crushed rock for roads, and building stone.',
       wow: 'Much of the surface of Mars is covered in basalt!',
@@ -67,7 +75,7 @@ window.ROCK_TYPES = {
     },
     obsidian: {
       name: 'Obsidian', kind: 'igneous',
-      forms: 'Lava cooled so fast that crystals had no time to grow. It turned into natural glass!',
+      forms: 'Lava cooled and hardened so fast that crystals had no time to grow. It turned into natural glass!',
       found: 'Near volcanoes, like Obsidian Cliff in Yellowstone.',
       used: 'Long ago, people made sharp arrowheads and knives from it.',
       wow: 'Its broken edges can be sharper than a razor!',
@@ -75,7 +83,7 @@ window.ROCK_TYPES = {
     },
     pumice: {
       name: 'Pumice', kind: 'igneous',
-      forms: 'Foamy lava full of gas bubbles blasted out of a volcano and cooled fast.',
+      forms: 'Foamy lava full of gas bubbles blasted out of a volcano, then cooled and hardened fast.',
       found: 'Near volcanoes that explode, like Mount St. Helens. This one came from there!',
       used: 'Pumice stones for scrubbing rough skin on feet.',
       wow: 'Pumice is so full of air bubbles that it can float on water!',
@@ -91,7 +99,7 @@ window.ROCK_TYPES = {
     },
     limestone: {
       name: 'Limestone', kind: 'sedimentary',
-      forms: 'Shells and skeletons of sea creatures piled up on the sea floor and were cemented together.',
+      forms: 'Layers of shells and skeletons piled up on the sea floor. They were pressed together and cemented into rock.',
       found: 'Places that were once under the sea, like Illinois and Indiana!',
       used: 'Making cement and concrete, and building stone.',
       wow: 'Limestone often has fossils of ancient sea creatures in it. Look closely at this one!',
@@ -99,7 +107,7 @@ window.ROCK_TYPES = {
     },
     coal: {
       name: 'Coal', kind: 'sedimentary',
-      forms: 'Plants from ancient swamps were buried and squeezed for millions of years.',
+      forms: 'Layers of dead swamp plants piled up and were pressed together into rock over millions of years.',
       found: 'In layers underground. Illinois has lots of coal!',
       used: 'Burning to make electricity.',
       wow: 'Much of the coal in Illinois is made from plants that grew before the dinosaurs!',
@@ -107,7 +115,7 @@ window.ROCK_TYPES = {
     },
     rocksalt: {
       name: 'Rock salt', kind: 'sedimentary',
-      forms: 'Salty seawater dried up and left the salt behind in thick layers.',
+      forms: 'Salty seawater dried up, leaving salt behind. Layers of salt piled up and were pressed into rock.',
       found: 'Deep underground. There is a huge salt mine under the city of Detroit!',
       used: 'Salting icy roads in winter, and table salt.',
       wow: 'It’s one of the only rocks that people eat!',
@@ -115,7 +123,7 @@ window.ROCK_TYPES = {
     },
     marble: {
       name: 'Marble', kind: 'metamorphic', startsAs: 'Limestone',
-      forms: 'Limestone was heated and squeezed deep underground.',
+      forms: 'Limestone was heated and squeezed deep underground, without melting.',
       found: 'Vermont, Georgia, Colorado, and Italy.',
       used: 'Statues and fancy buildings.',
       wow: 'The Lincoln Memorial is made of marble from the same place as this rock!',
@@ -123,7 +131,7 @@ window.ROCK_TYPES = {
     },
     slate: {
       name: 'Slate', kind: 'metamorphic', startsAs: 'Shale (a rock made of mud)',
-      forms: 'Shale, a rock made of mud, was squeezed and heated.',
+      forms: 'Shale, a rock made of mud, was heated and squeezed, without melting.',
       found: 'Pennsylvania, Vermont, and Wales.',
       used: 'Roof tiles, old chalkboards, and pool tables.',
       wow: 'Slate splits into thin, flat sheets!',
@@ -131,7 +139,7 @@ window.ROCK_TYPES = {
     },
     gneiss: {
       name: 'Gneiss', kind: 'metamorphic', startsAs: 'Granite or other rocks',
-      forms: 'Rock was heated and squeezed so much that its minerals lined up in stripes.',
+      forms: 'Rock was heated and squeezed so much that its minerals lined up in stripes. It never melted.',
       found: 'Deep in Earth’s crust, like in Canada.',
       used: 'Countertops and building stone.',
       wow: 'It’s pronounced “nice”! Some gneiss is about 4 billion years old.',
@@ -139,7 +147,7 @@ window.ROCK_TYPES = {
     },
     quartzite: {
       name: 'Quartzite', kind: 'metamorphic', startsAs: 'Sandstone',
-      forms: 'Sandstone was heated and squeezed until the sand grains fused together.',
+      forms: 'Sandstone was heated and squeezed until the sand grains fused together, without melting.',
       found: 'Wisconsin, Minnesota, and South Dakota.',
       used: 'Countertops, and crushed rock for railroad tracks.',
       wow: 'It’s harder than glass. It can scratch a window!',
