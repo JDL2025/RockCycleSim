@@ -173,16 +173,21 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
          <button class="wide-btn" data-lockagain>${esc(T.lockAgain)}</button>
          <button class="wide-btn ghost pg-erase" data-erase>${esc(T.erase)}</button>`
       : `<p>${esc(T.text)}</p>
-         <form class="pg-t-form" autocomplete="off"><input type="password" inputmode="numeric" autocomplete="off" placeholder="${esc(T.placeholder)}" aria-label="${esc(T.placeholder)}">
-         <button class="wide-btn" type="submit">${esc(T.unlock)}</button></form>
+         <div class="pg-t-form" role="group">
+           <input type="text" class="pg-code" inputmode="numeric" name="rce-teacher-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" placeholder="${esc(T.placeholder)}" aria-label="${esc(T.placeholder)}">
+           <button class="wide-btn" type="button" data-unlock>${esc(T.unlock)}</button></div>
          ${msg ? `<p class="pg-t-msg${bad ? ' bad' : ''}">${esc(msg)}</p>` : ''}`;
-    const f = body.querySelector('form');
-    if (f) f.onsubmit = e => {
-      e.preventDefault();
-      const v = f.querySelector('input').value;
+    // a plain text box (masked with dots), not a password field or form, so Safari and
+    // password managers like 1Password don't treat the site as a login page
+    const inp = body.querySelector('.pg-code'), go = body.querySelector('[data-unlock]');
+    const tryCode = () => {
+      const v = inp.value; inp.value = '';
       if (scramble(v) === PASS_HASH) { S.teacher = true; save(); renderTeacher(); }
-      else { renderTeacher(T.wrong, true); const inp = $('#teacherBody input'); if (inp) { inp.classList.add('bad'); inp.focus(); } }
+      else { renderTeacher(T.wrong, true); const i2 = $('#teacherBody .pg-code'); if (i2) { i2.classList.add('bad'); i2.focus(); } }
     };
+    if (go) go.onclick = tryCode;
+    if (inp) inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } };
     const la = body.querySelector('[data-lockagain]'); if (la) la.onclick = () => { S.teacher = false; save(); renderTeacher(T.lockedAgain); };
     const er = body.querySelector('[data-erase]');
     if (er) er.onclick = () => {
@@ -205,6 +210,10 @@ export function createProgress(ui, W, QZ = {}, DG = null) {
       buttons: [{ label: H.ok }]
     });
   }
+
+  // when the Unlock all panel closes, take the code box off the page
+  const tp = $('#panel-teacher');
+  if (tp && window.MutationObserver) new MutationObserver(() => { if (tp.hidden) { const b = $('#teacherBody'); if (b) b.innerHTML = ''; } }).observe(tp, { attributes: true, attributeFilter: ['hidden'] });
 
   // the left-menu buttons
   document.addEventListener('click', e => {

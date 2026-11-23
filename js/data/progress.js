@@ -74,10 +74,10 @@ window.PROGRESS = {
   teacher: {
     button: 'Unlock all',
     title: 'Teacher: Unlock all',
-    text: 'Type the teacher password to unlock every mode and quiz on this iPad.',
-    placeholder: 'Password',
+    text: 'Type the teacher code to unlock every mode and quiz on this iPad.',
+    placeholder: 'Teacher code',
     unlock: 'Unlock all',
-    wrong: 'That password isn’t right.',
+    wrong: 'That code isn’t right.',
     done: 'Everything is unlocked on this iPad.',
     lockAgain: 'Lock again',
     lockedAgain: 'Locked again. Students’ normal unlocking is back on.',

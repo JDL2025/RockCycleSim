@@ -985,3 +985,5 @@ body.mode-diagram .story-btns button { min-height: 50px; }
 .pg-unlock { margin: 4px 0 8px; padding: 8px 12px; border-radius: 12px; font-size: 19px; font-weight: 800; color: #ffd84d; background: rgba(255,216,77,.12); border: 1px solid rgba(255,216,77,.5); display: flex; gap: 8px; align-items: center; animation: pctPop .6s cubic-bezier(.2,.9,.3,1.4) .3s both; }
 .pg-unlock i { font-style: normal; }
 .pg-unlock.gold { color: #fff1a8; background: linear-gradient(90deg, rgba(255,216,77,.25), rgba(255,138,31,.2)); }
+/* the teacher code box: masked with dots, but not a password field (so password managers ignore it) */
+.pg-t-form .pg-code { -webkit-text-security: disc; text-security: disc; }
