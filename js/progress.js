@@ -6,6 +6,7 @@
 // All the words are in js/data/progress.js. Pass scores are in
 // js/data/quizzes.js and js/data/diagram.js ("pass").
 // =====================================================================
+import { showFinale } from './finale.js';
 const KEY = 'rce-progress-1';
 const PASS_HASH = 's6wc3w';            // the teacher password, scrambled so it isn't written here in plain text
 const scramble = s => { let x = 5381; for (const c of ('rce:' + String(s).trim().toLowerCase())) x = ((x << 5) + x + c.charCodeAt(0)) >>> 0; return x.toString(36); };
@@ -51,8 +52,18 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
   function step(k) { if (!S.steps[k]) { S.steps[k] = true; save(); } }
   function story(kind) { if (!S.stories[kind]) { S.stories[kind] = true; save(); } }
   function lesson() { if (!S.lesson) { S.lesson = true; save(); } }
+  function streak(n) { if (n > (S.bestStreak || 0)) { S.bestStreak = n; save(); } }            // longest Diagram Quiz streak
+  function rockMiss(k) { S.rockMiss = S.rockMiss || {}; if (!S.rockMiss[k]) { S.rockMiss[k] = true; save(); } }   // a wrong drop while sorting
+  const allPassed = () => Object.keys(QUIZ).every(passed);
+  function finaleData() {
+    const quizzes = {};
+    for (const [k, d] of Object.entries(QUIZ)) { const q = S.quizzes[k]; quizzes[k] = { title: d.title, n: d.n, need: d.need, best: q ? q.best : null, tries: q ? q.tries : 0 }; }
+    return { steps: stepsDone(), quizzes, stories: !!(S.stories.sedimentary && S.stories.igneous), sorted: rocksDone(), firstSorts: ROCK_KEYS.filter(k => S.rocks && S.rocks[k] && !(S.rockMiss || {})[k]).length,
+      streak: S.bestStreak || 0, completedAt: S.completedAt || null };
+  }
+  function finale() { ui.closeModal(); ui.closePanels(); return showFinale(ui, W, finaleData()); }
   function rockSorted(k) { S.rocks = S.rocks || {}; if (!S.rocks[k]) { S.rocks[k] = true; save(); } }
-  function rocksReset() { S.rocks = {}; save(); }
+  function rocksReset() { S.rocks = {}; S.rockMiss = {}; save(); }
   function entered(m) { if (S.fresh[m]) { delete S.fresh[m]; save(); } }
   const tries = key => (S.quizzes[key] && S.quizzes[key].tries) || 0;
   // a quiz was finished: keep the best score, and say what it unlocked (as HTML for the score screen)
@@ -64,6 +75,9 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
     S.quizzes[key] = q;
     const unlocked = ['energy', 'diagram', ...(RT ? ['rocks'] : [])].filter(m => !before[m] && canEnter(m));
     unlocked.forEach(m => { S.fresh[m] = true; });
+    // every quiz passed for the first time: the big finish screen
+    const firstFinish = allPassed() && !S.completedAt;
+    if (firstFinish) S.completedAt = Date.now();
     save();
     const ok = first >= d.need;
     let html = ok ? `<p class="pg-pass ok"><i>✓</i>${esc(W.passed)}</p>`
@@ -71,7 +85,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
     if (!ok && wasPassed && W.alreadyPassed) html += `<p class="pg-pass soft">${esc(W.alreadyPassed)}</p>`;
     unlocked.forEach(m => { html += `<p class="pg-unlock"><i>🔓</i>${esc(fill(W.unlockedNow, { mode: W.modes[m] }))}</p>`; });
     if (key === LAST && ok) html += `<p class="pg-unlock gold"><i>🏆</i>${esc(W.allDone)}</p>`;
-    return { passed: ok, unlocked, html };
+    return { passed: ok, unlocked, html, finale: firstFinish };
   }
 
   // ---------- the "Get ready" pop-up at the start of a milestone quiz ----------
@@ -153,6 +167,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
     const ms = milestones(), done = ms.filter(Boolean).length, BC = RC.buttonColors || {};
     const dots = STEP_KEYS.map(k => `<i class="pg-dot${S.steps[k] ? ' on' : ''}" style="--c:${BC[k] || '#7fe0a0'}" title="${esc((RC.steps && RC.steps[k] && RC.steps[k].button) || k)}"></i>`).join('');
     body.innerHTML = `
+      ${allPassed() ? `<button class="wide-btn pg-trophy" data-trophy>${esc(W.finale.open)}</button>` : ''}
       <div class="pg-top"><div class="pg-bar"><i style="width:${Math.round(done / ms.length * 100)}%"></i></div>
         <p>${esc(fill(W.overall, { n: done, total: ms.length }))}</p></div>
       ${S.teacher ? `<p class="pg-teacher">${esc(W.teacher.done)}</p>` : ''}
@@ -170,6 +185,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
         <div class="pg-row ${rocksDone() >= ROCK_KEYS.length ? 'done' : 'todo'}"><i class="pg-ic">${rocksDone() >= ROCK_KEYS.length ? '✓' : '○'}</i>
           <div class="pg-txt"><b>${esc(W.rows.rocksSort)}</b><span>${esc(fill(W.rows.rocksCount, { n: rocksDone() }))}</span></div></div>
         ${quizRow('rocks', QUIZ.rocks.title)}`) : ''}`;
+    const tb = body.querySelector('[data-trophy]'); if (tb) tb.onclick = finale;
   }
 
   // ---------- teacher: Unlock all ----------
@@ -181,6 +197,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
     body.innerHTML = S.teacher
       ? `<p class="pg-t-ok">🔓 ${esc(T.done)}</p>${msg ? `<p class="pg-t-msg">${esc(msg)}</p>` : ''}
          <button class="wide-btn" data-lockagain>${esc(T.lockAgain)}</button>
+         <button class="wide-btn ghost" data-preview>🏆 ${esc(T.preview)}</button>
          <button class="wide-btn ghost pg-erase" data-erase>${esc(T.erase)}</button>`
       : `<p>${esc(T.text)}</p>
          <div class="pg-t-form" role="group">
@@ -198,6 +215,7 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
     };
     if (go) go.onclick = tryCode;
     if (inp) inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } };
+    const pv = body.querySelector('[data-preview]'); if (pv) pv.onclick = finale;
     const la = body.querySelector('[data-lockagain]'); if (la) la.onclick = () => { S.teacher = false; save(); renderTeacher(T.lockedAgain); };
     const er = body.querySelector('[data-erase]');
     if (er) er.onclick = () => {
@@ -233,6 +251,6 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
   }, true);
 
   refresh();
-  return { step, story, lesson, entered, recordQuiz, rockSorted, rocksReset, rocksSorted: () => Object.assign({}, S.rocks), tries, canQuiz, canEnter, explainLock, explainQuizLock, passIntro,
+  return { step, story, lesson, entered, recordQuiz, rockSorted, rocksReset, streak, rockMiss, finale, finaleData, rocksSorted: () => Object.assign({}, S.rocks), tries, canQuiz, canEnter, explainLock, explainQuizLock, passIntro,
     hasPass: key => !!QUIZ[key], openPanel, refresh, homeSteps, state: () => JSON.parse(JSON.stringify(S)) };
 }

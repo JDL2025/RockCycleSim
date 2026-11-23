@@ -305,6 +305,7 @@ export function createRocks(api, ui, R, energy) {
   }
   function wrong(bin) {
     flash(bin, 'bad');
+    if (P()) P().rockMiss(current);                             // for "sorted on the first try" on the finish screen
     flyTo(iconHome(), null, 450);
     hintPop(fill(R.hint, { forms: R.rocks[current].forms }));
   }
@@ -391,7 +392,8 @@ export function createRocks(api, ui, R, energy) {
       $q('.qz-x').onclick = closeQuiz; $q('[data-done]').onclick = closeQuiz;
       $q('[data-again]').onclick = runQuiz;
       const pb = $q('[data-progress]'); if (pb) pb.onclick = () => { closeQuiz(); P().openPanel(); };
-      if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
+      if (rec && rec.finale) setTimeout(() => { closeQuiz(); P().finale(); }, 2200);     // everything passed: the big finish
+      else if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
     }
     ask();
   }

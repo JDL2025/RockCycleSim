@@ -79,6 +79,7 @@ Modes unlock in order, so students work through the lesson as a progression:
 - Locked modes and the locked Quiz button show a 🔒. Tapping them explains what to do. A newly unlocked mode glows until it’s opened. Students can always go back to modes they have unlocked. Steps played get a small ✓ in the menu bar.
 - **My Progress** (left menu): a progress bar for the 8 milestones (all 8 steps, each story and lesson, each quiz passed), the 8 step dots, and for each quiz the best score, last try and number of tries. The best score only goes up.
 - **Unlock all** (left menu, for the teacher): type the teacher password. It is kept private and is not written in these files (only a scrambled form is in `js/progress.js`). It unlocks every mode and quiz on that iPad (the button turns green), and has **Lock again** and **Erase this iPad’s progress** for testing.
+- **The finish screen:** when a student passes every quiz (the last one is the Rock Types Quiz), a big “Rock Cycle Champion!” screen opens with a gold trophy, glowing rays, fireworks and confetti. Four glowing panels, one per mode, show their stats (steps played, each quiz’s best score and percent, longest Diagram Quiz streak, rocks sorted on the first try), a gold, silver or bronze medal, and shout-outs like “Perfect score on…”, “Passed on your very first try!” or “Never gave up: 3 tries…”. It ends with their overall score, the date they finished, and “Show your teacher!”. They can reopen it anytime with **🏆 My Trophy Room** in My Progress. The teacher panel has **Show the finish screen** to preview it.
 - Progress is saved on each iPad. **Add to Home Screen** (in Help) shows step-by-step instructions. iPads don’t let a website add itself, and the Home Screen app keeps its own progress, separate from Safari, so students should add it first and always open it from the icon.
 - Pass scores: `js/data/quizzes.js` and `js/data/diagram.js` (`pass`). All the words: `js/data/progress.js`.
 
@@ -145,6 +146,7 @@ js/data/rocktypes.js  Rock Types facts, photo credits and quiz (edit me)
 js/rocks.js           Rock Types mode: crystals, pop-ups, sorting boxes, quiz
 assets/rocks/         the 12 rock photos
 js/progress.js        saved progress, locks, My Progress, Unlock all
+js/finale.js          the big finish screen
 manifest.webmanifest  Home Screen app name and icon
 assets/tex/           ground and rock photo textures
 assets/fonts/, lib/, music/   fonts, Three.js, songs

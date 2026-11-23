@@ -512,6 +512,7 @@ export function createDiagram(api, ui, D, energy) {
       return;
     }
     quiz.count++; quiz.streak++; updateMeter(true);
+    if (ui.progress) ui.progress.streak(quiz.streak);           // remember the longest streak for the finish screen
     if (rockRound) {
       quiz.done[chip] = true; quiz.done['n:' + t.key] = true;
       setNode(t.key, 'seen'); popNode(t.key);
@@ -634,7 +635,8 @@ export function createDiagram(api, ui, D, energy) {
     scoreBack.querySelector('.qz-x').onclick = done;
     const pb = scoreBack.querySelector('[data-progress]'); if (pb) pb.onclick = () => { done(); ui.progress.openPanel(); };
     scoreBack.querySelector('[data-again]').onclick = () => { closeScore(); startQuiz(); };
-    if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
+    if (rec && rec.finale) setTimeout(() => { done(); ui.progress.finale(); }, 2200);     // everything passed: the big finish
+    else if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
   }
 
   // ---------- coming into and leaving Diagram mode ----------

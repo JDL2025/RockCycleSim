@@ -119,7 +119,8 @@ export function createQuiz(ui, Q) {
       back.querySelector('[data-again]').onclick = () => { results.length = 0; retake = true; ask(0); };
       const pb = back.querySelector('[data-progress]'); if (pb) pb.onclick = () => { finish(); ui.progress.openPanel(); };
       back.querySelector('[data-done]').onclick = finish;
-      if (perfect) ui.celebrate(W.perfectTitle, W.perfectSub, { dur: 6.5 });
+      if (rec && rec.finale) setTimeout(() => { finish(); ui.progress.finale(); }, 2200);     // everything passed: the big finish
+      else if (perfect) ui.celebrate(W.perfectTitle, W.perfectSub, { dur: 6.5 });
     }
 
     ask(0);

@@ -88,7 +88,39 @@ window.PROGRESS = {
     lockedAgain: 'Locked again. Students’ normal unlocking is back on.',
     erase: 'Erase this iPad’s progress',
     eraseSure: 'Tap again to erase everything',
-    erased: 'All progress on this iPad was erased.'
+    erased: 'All progress on this iPad was erased.',
+    preview: 'Show the finish screen'
+  },
+
+  // the big finish screen (shows when a student passes every quiz)
+  finale: {
+    title: 'Rock Cycle Champion!',
+    sub: 'You completed all of Rock Cycle Explorer!',
+    overall: 'Overall: {right} of {total} right on the first try ({pct}%)',
+    show: 'Show your teacher!',
+    close: 'Keep exploring',
+    again: 'More fireworks!',
+    open: '🏆 My Trophy Room',
+    completed: 'Completed {date}',
+    medals: { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' },
+    stats: {
+      steps: '{n} of 8 steps played',
+      quiz: '{right} of {n}',
+      sorted: '{n} of 12 rocks sorted',
+      firstSort: '{n} of 12 sorted on the first try',
+      streak: 'Longest streak: 🔥 {n} in a row'
+    },
+    // shout-outs; the site picks the best ones for each part
+    praise: {
+      perfect: 'Perfect score on the {quiz}!',
+      firstTry: 'Passed the {quiz} on your very first try!',
+      grit: 'Never gave up: {tries} tries to master the {quiz}!',
+      steps: 'Watched every step of the rock cycle!',
+      stories: 'Learned how the Sun and Earth’s heat power the rock cycle!',
+      streak: 'Hot streak: {n} right in a row on the diagram!',
+      sorts: 'Sorted {n} rocks without a single miss!',
+      allRocks: 'Discovered all 12 rocks!'
+    }
   },
 
   // Add to Home Screen
