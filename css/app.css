@@ -1222,3 +1222,7 @@ body.mode-rocks .dock, body.mode-rocks .banner, body.mode-rocks #labelsBtn { dis
 .rk-said b { color: #ffd84d !important; }
 .rk-break { margin: 4px 0 8px; font-size: 17px; font-weight: 700; color: #cfd8e6; }
 .pg-intro-extra { font-size: 19px; font-weight: 700; color: #ffe9a6; margin: 6px 0; }
+
+/* the Rock Types Quiz button before all 12 are sorted */
+.rk-btn.go.locked { animation: none; filter: saturate(.45) brightness(.8); box-shadow: none; opacity: .85; display: inline-flex; align-items: center; gap: 6px; }
+.rk-lock { font-style: normal; }

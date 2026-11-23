@@ -304,8 +304,10 @@ export function createRocks(api, ui, R, energy) {
     const n = sortedCount();
     bins.querySelector('.rk-count').textContent = fill(R.counter, { n });
     const acts = bins.querySelector('.rk-actions');
-    acts.innerHTML = n === KEYS.length ? `<button class="rk-btn go" data-quiz>${esc(R.takeQuiz)}</button><button class="rk-btn" data-over>${esc(R.startOver)}</button>` : '';
-    const q = acts.querySelector('[data-quiz]'); if (q) q.onclick = openQuizIntro;
+    // the quiz button is always there; it stays locked until all 12 rocks are sorted (Unlock all opens it for the teacher)
+    const open = n === KEYS.length || teacher();
+    acts.innerHTML = `<button class="rk-btn go${open ? '' : ' locked'}" data-quiz>${open ? '' : '<i class="rk-lock">🔒</i>'}${esc(R.takeQuiz)}</button>${n === KEYS.length ? `<button class="rk-btn" data-over>${esc(R.startOver)}</button>` : ''}`;
+    acts.querySelector('[data-quiz]').onclick = () => (n === KEYS.length || teacher() ? openQuizIntro() : explainQuizLock());
     const o = acts.querySelector('[data-over]'); if (o) o.onclick = startOver;
   }
   bins.addEventListener('click', e => {           // tap a mini card: it lifts up, then the big card opens
@@ -314,6 +316,12 @@ export function createRocks(api, ui, R, energy) {
     sl.classList.remove('lift'); void sl.offsetWidth; sl.classList.add('lift');
     setTimeout(() => { sl.classList.remove('lift'); if (my === tk && !popup && !quizBack) openPopup(k); }, 260);
   });
+  const teacher = () => !!(P() && P().state().teacher);
+  function explainQuizLock() {
+    if (current || popup || quizBack || waitQ) return;
+    const n = sortedCount();
+    ui.modal({ title: R.quizLockTitle, html: `<p class="lead big pg-lock-msg"><i>🔒</i>${esc(fill(R.quizLock, { n, left: KEYS.length - n }))}</p>`, buttons: [{ label: R.quizLockOk }] });
+  }
   // a rock sorted on the first try (no wrong drops) earns a shiny holo card
   function isHolo(k) { return !!sorted()[k] && !(P() ? P().rockMisses() : {})[k]; }
   function miniCard(k) {
