@@ -131,7 +131,7 @@ export function createRocks(api, ui, R, energy) {
 
   const cv = api.renderer.domElement;
   // ---------- state ----------
-  let active = false, mode = 'learn', current = null, popup = null, quizBack = null, lastHint = -1, tk = 0;
+  let active = false, mode = 'learn', current = null, popup = null, quizBack = null, lastHint = -1, tk = 0, waitQ = false;
   const P = () => ui.progress;
   const sorted = () => (P() ? P().rocksSorted() : {});
   const sortedCount = () => KEYS.filter(k => sorted()[k]).length;
@@ -160,7 +160,7 @@ export function createRocks(api, ui, R, energy) {
     b.setAttribute('aria-label', R.rocks[k].name);
     b.innerHTML = rockIcon(k); b.title = R.rocks[k].name;
     b.onclick = () => {
-      if (!active || popup || quizBack) return;
+      if (!active || popup || quizBack || waitQ) return;
       if (mode === 'learn' && current) { ui.setHud(R.hudBusy); pulseIcon(); return; }
       openPopup(k);
     };
@@ -198,7 +198,7 @@ export function createRocks(api, ui, R, energy) {
   cv.addEventListener('pointerup', e => {
     if (!active || !down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
-    if (moved > 12 || dt > 700 || popup || quizBack) return;
+    if (moved > 12 || dt > 700 || popup || quizBack || waitQ) return;
     const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
     let best = null, bd = 50;
     for (const k of KEYS) {
@@ -216,7 +216,7 @@ export function createRocks(api, ui, R, energy) {
   // retry = the student just dropped this rock in the wrong box: its card comes back with a message on top
   function openPopup(k, retry = false) {
     closePopup();
-    const rk = R.rocks[k], kd = R.kinds[rk.kind], Lb = R.labels, review = mode === 'review' || !!sorted()[k];
+    const rk = R.rocks[k], kd = R.kinds[rk.kind], Lb = R.labels, review = mode === 'review' || !!sorted()[k], holo = review && isHolo(k);
     popup = document.createElement('div'); popup.className = 'modal-back rk-back';
     const row = (ic, label, text, cls = '') => text ? `<div class="rk-row${cls}"><i>${ic}</i><p class="say"><b>${esc(label)}:</b> ${esc(text)}</p></div>` : '';
     let rc = '';
@@ -227,7 +227,7 @@ export function createRocks(api, ui, R, energy) {
       <div class="rk-body">
         ${retry ? `<div class="rk-retry say" style="--h:${rc}"><b>💡 ${esc(R.retryTitles[Math.floor(Math.random() * R.retryTitles.length)])}</b> ${esc(R.retryText)}</div>` : ''}
         <div class="rk-head"><h2 class="say">${esc(rk.name)}</h2>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
-        ${review ? `<p class="rk-kind say">${esc(kd.name)} rock</p>` : `<p class="rk-nudge say">${esc(R.nudge)}</p>`}
+        ${review ? `<p class="rk-kind say">${esc(kd.name)} rock</p>${holo ? `<p class="rk-holo-tag say">${esc(R.holo)}</p>` : ''}` : `<p class="rk-nudge say">${esc(R.nudge)}</p><p class="rk-snote say">${esc(R.surprise.note)}</p>`}
         ${row('🔥', Lb.forms, rk.forms, retry ? ' clue' : '')}${review ? row('🔄', Lb.startsAs, rk.startsAs) : ''}${row('📍', Lb.found, rk.found)}${row('🛠️', Lb.used, rk.used)}${row('⭐', Lb.wow, rk.wow)}
         <button class="rk-go">${esc(retry ? R.retryButton : review ? R.popupButtonReview : R.popupButton)}</button>
       </div></div>`;
@@ -299,7 +299,7 @@ export function createRocks(api, ui, R, energy) {
     KINDS.forEach(kind => {
       const slots = bins.querySelectorAll(`.rk-bin[data-kind="${kind}"] .rk-slot`);
       const ks = KEYS.filter(k => R.rocks[k].kind === kind && s[k]);
-      slots.forEach((sl, i) => { const k = ks[i]; sl.dataset.rock = k || ''; sl.classList.toggle('full', !!k); sl.innerHTML = k ? `${rockIcon(k)}<span>${esc(R.rocks[k].name)}</span>` : ''; });
+      slots.forEach((sl, i) => { const k = ks[i]; sl.dataset.rock = k || ''; sl.classList.toggle('full', !!k); sl.innerHTML = k ? miniCard(k) : '<i class="rk-empty">?</i>'; });
     });
     const n = sortedCount();
     bins.querySelector('.rk-count').textContent = fill(R.counter, { n });
@@ -308,9 +308,18 @@ export function createRocks(api, ui, R, energy) {
     const q = acts.querySelector('[data-quiz]'); if (q) q.onclick = openQuizIntro;
     const o = acts.querySelector('[data-over]'); if (o) o.onclick = startOver;
   }
-  bins.addEventListener('click', e => {           // tap a sorted rock to read about it again
-    const sl = e.target.closest('.rk-slot.full'); if (sl && !current && !quizBack) openPopup(sl.dataset.rock);
+  bins.addEventListener('click', e => {           // tap a mini card: it lifts up, then the big card opens
+    const sl = e.target.closest('.rk-slot.full'); if (!sl || current || quizBack || popup || waitQ) return;
+    const k = sl.dataset.rock, my = tk;
+    sl.classList.remove('lift'); void sl.offsetWidth; sl.classList.add('lift');
+    setTimeout(() => { sl.classList.remove('lift'); if (my === tk && !popup && !quizBack) openPopup(k); }, 260);
   });
+  // a rock sorted on the first try (no wrong drops) earns a shiny holo card
+  function isHolo(k) { return !!sorted()[k] && !(P() ? P().rockMisses() : {})[k]; }
+  function miniCard(k) {
+    const rk = R.rocks[k], holo = isHolo(k);
+    return `<div class="rk-mini${holo ? ' holo' : ''}"><img src="assets/rocks/${esc(rk.photo.file)}" alt=""><span>${esc(rk.name)}</span>${holo ? '<em>✨</em>' : ''}</div>`;
+  }
   function binAt(x, y) {
     for (const b of bins.querySelectorAll('.rk-bin')) { const r = b.getBoundingClientRect(); if (x > r.left - 12 && x < r.right + 12 && y > r.top - 24 && y < r.bottom + 12) return b; }
     return null;
@@ -333,10 +342,20 @@ export function createRocks(api, ui, R, energy) {
       removeIcon(); current = null;
       if (P()) P().rockSorted(k);
       fillBins();
-      const sl = [...bin.querySelectorAll('.rk-slot')].find(s => s.dataset.rock === k); if (sl) { sl.classList.add('pop'); }
+      const sl = [...bin.querySelectorAll('.rk-slot')].find(s => s.dataset.rock === k);
+      if (sl) {
+        sl.classList.add('flipin');
+        if (isHolo(k)) setTimeout(() => { if (my !== tk) return; const r2 = sl.getBoundingClientRect(); ui.burst(r2.left + r2.width / 2, r2.top + r2.height / 2, true, '#ff9ef0'); ui.burst(r2.left + r2.width / 2, r2.top + r2.height / 2, true, '#4fe3ff'); }, 650);
+        setTimeout(() => sl.classList.remove('flipin'), 1600);
+      }
       setGemStates();
       const pr = pins[k].getBoundingClientRect(); if (pr.width) ui.burst(pr.left + pr.width / 2, pr.top + pr.height / 2, true, gems[k].color);
-      if (sortedCount() === KEYS.length) allSorted(); else ui.setHud(R.hud);
+      const after = () => { if (my !== tk) return; if (sortedCount() === KEYS.length) allSorted(); else ui.setHud(R.hud); };
+      const rq = P() ? P().rockQ() : null;
+      if (rq && rq.pick.includes(k) && !(k in rq.ans) && R.rocks[k].q) {
+        waitQ = true; ui.setHud(R.surprise.title);
+        setTimeout(() => { waitQ = false; if (my === tk) askSurprise(k, after); }, 1100);
+      } else after();
     }, 300);
   }
   function wrong(bin) {
@@ -348,35 +367,128 @@ export function createRocks(api, ui, R, energy) {
   }
   const RETRY_COLORS = ['177,77,255', '255,138,31', '255,63,164', '34,227,200', '79,195,247', '198,244,50', '255,216,77'];
 
+  // ---------- surprise questions (about the card they just read) ----------
+  const LET = ['A', 'B', 'C', 'D'];
+  const pickOne = a => a[Math.floor(Math.random() * a.length)];
+  function newPick() {                            // 2 rocks of each kind, chosen at random
+    const pick = KINDS.flatMap(kind => shuffled(KEYS.filter(k => R.rocks[k].kind === kind && R.rocks[k].q)).slice(0, 2));
+    const q = { pick, ans: {}, used: false };
+    if (P()) P().rockQSet(q);
+    return q;
+  }
+  function ensurePick() { if (!P()) return; const q = P().rockQ(); if (!q.pick || !q.pick.length) newPick(); }
+  // the question, its answers (mixed up each time; True/False stays True, False), and a place for feedback
+  function cqHTML(k) {
+    const rk = R.rocks[k], q = rk.q, S = R.surprise;
+    const opts = q.choices ? shuffled(q.choices.map((t, i) => ({ t, ok: i === 0 }))) : [{ t: S.true, ok: q.tf === true }, { t: S.false, ok: q.tf === false }];
+    return `<div class="rk-sq-rock"><img src="assets/rocks/${esc(rk.photo.file)}" alt=""><b>${esc(rk.name)}</b></div>
+      <h3 class="qz-q say">${esc(q.ask)}</h3>
+      <div class="qz-opts">${opts.map((o, d) => `<button class="qopt" data-ok="${o.ok ? 1 : 0}"><i>${LET[d]}</i><span>${esc(o.t)}</span></button>`).join('')}</div>
+      <div class="qz-fb" aria-live="polite"></div>`;
+  }
+  function wireCQ(root, k, onAnswer) {
+    const rk = R.rocks[k], q = rk.q, S = R.surprise, btns = [...root.querySelectorAll('.qopt')], fb = root.querySelector('.qz-fb');
+    const said = `<p class="say rk-said"><b>${esc(S.cardSaid)}</b> ${esc(R.labels[q.from])}: ${esc(rk[q.from])}</p>`;
+    btns.forEach(b => b.onclick = () => {
+      if (b.disabled) return;
+      ui.speech.stop();
+      const ok = b.dataset.ok === '1', right = btns.find(o => o.dataset.ok === '1');
+      btns.forEach(o => o.disabled = true);
+      if (ok) {
+        b.classList.add('right'); fb.className = 'qz-fb good';
+        fb.innerHTML = `<p class="say"><b>${esc(pickOne(S.right))}</b></p>${said}`;
+        const r = b.getBoundingClientRect(); ui.burst(r.left + r.width / 2, r.top + r.height / 2, true);
+      } else {
+        b.classList.add('wrong'); right.classList.add('right', 'reveal'); fb.className = 'qz-fb bad';
+        fb.innerHTML = `<p class="say"><b>${esc(S.wrong)}</b> ${esc(right.querySelector('span').textContent)}</p>${said}`;
+      }
+      if (P()) P().rockQAnswer(k, ok);
+      onAnswer(ok);
+    });
+  }
+  function askSurprise(k, then) {
+    closePopup();
+    const S = R.surprise;
+    popup = document.createElement('div'); popup.className = 'modal-back quiz-back';
+    popup.innerHTML = `<div class="modal quiz t-gold rk-sq" role="dialog" aria-modal="true" aria-label="${esc(S.title)}">
+      <div class="qz-top"><span class="qz-title">${esc(S.title)}</span></div>
+      <div class="qz-read"><div class="qz-qrow">${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>${cqHTML(k)}</div>
+      <div class="qz-next"></div></div>`;
+    document.body.appendChild(popup);
+    const box = popup;
+    const sb = box.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(box.querySelector('.qz-read'), sb);
+    wireCQ(box, k, () => {
+      const nx = box.querySelector('.qz-next');
+      nx.innerHTML = `<button class="qz-go">${esc(S.next)}</button>`;
+      nx.querySelector('button').onclick = () => { closePopup(); then(); };
+    });
+  }
+
   function allSorted() {
     const my = tk;
     mode = 'review'; setGemStates(); fillBins(); ui.setHud(R.hudDone);
     ui.celebrate(R.allSorted, R.allSortedSub, { dur: 3.6 });
     setTimeout(() => { if (my === tk && active) openQuizIntro(); }, 3900);
   }
-  function startOver() { if (P()) P().rocksReset(); closeQuiz(); removeIcon(); current = null; mode = 'learn'; fillBins(); setGemStates(); ui.setHud(R.hud); }
+  function startOver() { if (P()) P().rocksReset(); closeQuiz(); removeIcon(); current = null; mode = 'learn'; ensurePick(); fillBins(); setGemStates(); ui.setHud(R.hud); }
 
   // ---------- the Rock Types Quiz: tap 2 rocks of each kind ----------
   const Q = R.quiz;
   function closeQuiz() { if (quizBack) { quizBack.remove(); quizBack = null; ui.speech.stop(); } }
-  function openQuizIntro() { if (P() && P().hasPass('rocks')) P().passIntro('rocks', runQuiz); else runQuiz(); }
+  // which card questions this quiz still needs: none if all 6 were answered while sorting,
+  // or 6 new ones if the last quiz already counted them (a retake)
+  function quizPlan() {
+    let rq = P() ? P().rockQ() : { pick: [], ans: {}, used: true };
+    if (rq.used || !rq.pick.length) rq = newPick();
+    return { rq, pending: rq.pick.filter(k => !(k in rq.ans)) };
+  }
+  function openQuizIntro() {
+    const { rq, pending } = quizPlan();
+    const a = rq.pick.filter(k => rq.ans[k]).length;
+    const extra = pending.length ? fill(Q.introCards, { m: pending.length }) : fill(Q.introSorted, { a });
+    if (P() && P().hasPass('rocks')) P().passIntro('rocks', runQuiz, null, extra); else runQuiz();
+  }
   function runQuiz() {
     closeQuiz();
+    const { pending } = quizPlan();
     const asks = shuffled(KINDS).flatMap(k => [k, k]), results = [];
     const grid = shuffled(KEYS), used = new Set();
     let q = 0, tries = 0, answered = false;
+    const say = ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : '';
     quizBack = document.createElement('div'); quizBack.className = 'modal-back quiz-back';
     quizBack.innerHTML = `<div class="modal quiz t-lime rk-quiz" role="dialog" aria-modal="true" aria-label="${esc(Q.title)}">
       <button class="close qz-x" aria-label="Close">✕</button>
       <div class="qz-top"><span class="qz-title">${esc(Q.title)}</span><span class="qz-step"></span></div>
-      <div class="qz-read"><div class="qz-qrow rk-qrow"><h3 class="qz-q say"></h3>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
-        <p class="rk-qfb" aria-live="polite"></p>
-        <div class="rk-grid">${grid.map(k => `<button class="rk-card" data-k="${k}"><img src="assets/rocks/${esc(R.rocks[k].photo.file)}" alt=""><span>${esc(R.rocks[k].name)}</span></button>`).join('')}</div></div>
+      <div class="qz-read"></div>
       <div class="qz-next"></div></div>`;
     document.body.appendChild(quizBack);
     const $q = s => quizBack.querySelector(s);
     $q('.qz-x').onclick = closeQuiz;
-    const sb = $q('[data-say]'); if (sb) sb.onclick = () => ui.speech.read($q('.qz-read'), sb);
+    const wireSay = () => { const sb = $q('[data-say]'); if (sb) sb.onclick = () => ui.speech.read($q('.qz-read'), sb); };
+
+    // part 1: card questions
+    let c = 0;
+    function askCard() {
+      const k = pending[c];
+      $q('.qz-step').textContent = fill(Q.cardStep, { n: c + 1, m: pending.length });
+      $q('.qz-read').innerHTML = `<div class="qz-qrow">${say}</div>${cqHTML(k)}`; $q('.qz-next').innerHTML = '';
+      wireSay();
+      wireCQ($q('.qz-read'), k, () => {
+        const last = c === pending.length - 1;
+        $q('.qz-next').innerHTML = `<button class="qz-go">${esc(Q.next)}</button>`;
+        $q('.qz-go').onclick = () => { ui.speech.stop(); if (last) startPhotos(); else { c++; askCard(); } };
+      });
+    }
+
+    // part 2: tap 2 rocks of each kind
+    function startPhotos() {
+      $q('.qz-read').innerHTML = `<div class="qz-qrow rk-qrow"><h3 class="qz-q say"></h3>${say}</div>
+        <p class="rk-qfb" aria-live="polite"></p>
+        <div class="rk-grid">${grid.map(k => `<button class="rk-card" data-k="${k}"><img src="assets/rocks/${esc(R.rocks[k].photo.file)}" alt=""><span>${esc(R.rocks[k].name)}</span></button>`).join('')}</div>`;
+      wireSay();
+      $q('.rk-grid').addEventListener('click', tapCard);
+      ask();
+    }
     function ask() {
       const kind = asks[q], second = q > 0 && asks[q - 1] === kind;
       tries = 0; answered = false;
@@ -385,7 +497,7 @@ export function createRocks(api, ui, R, energy) {
       $q('.rk-qfb').textContent = ''; $q('.qz-next').innerHTML = '';
       quizBack.querySelectorAll('.rk-card.wrong').forEach(c => c.classList.remove('wrong'));
     }
-    quizBack.querySelector('.rk-grid').addEventListener('click', e => {
+    function tapCard(e) {
       const c = e.target.closest('.rk-card'); if (!c || answered || used.has(c.dataset.k)) return;
       const k = c.dataset.k, rk = R.rocks[k], kind = asks[q], fb = $q('.rk-qfb');
       ui.speech.stop();
@@ -402,15 +514,20 @@ export function createRocks(api, ui, R, energy) {
         c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
         fb.className = 'rk-qfb no'; fb.textContent = fill(Q.wrong, { name: rk.name, kind: kindName(rk.kind) });
       }
-    });
+    }
+
     function score() {
-      const n = asks.length, first = results.filter(r => r === 'first').length, perfect = first === n, pct = Math.round(first / n * 100);
+      const rq = P() ? P().rockQ() : { pick: [], ans: {} };
+      const cards = rq.pick.filter(k => rq.ans[k]).length, photos = results.filter(r => r === 'first').length;
+      if (P()) P().rockQSet(Object.assign(rq, { used: true }));        // a retake asks 6 new card questions
+      const n = 12, first = cards + photos, perfect = first === n, pct = Math.round(first / n * 100);
       const rec = P() ? P().recordQuiz('rocks', first, n) : null;
       quizBack.querySelector('.modal').innerHTML = `<button class="close qz-x" aria-label="Close">✕</button>
         <div class="qz-top"><span class="qz-title">${esc(Q.title)}</span></div>
         <div class="qz-read qz-score"><h3>${esc(perfect ? Q.perfectTitle : Q.scoreTitle)}</h3>
           <div class="qz-scorerow"><p class="qz-big say"><b>${first}</b> ${esc(Q.outOf)} <b>${n}</b> ${esc(Q.firstTry)}</p>
           <span class="qz-pct${perfect ? ' perfect' : ''}" aria-label="${pct} percent">${pct}<small>%</small></span></div>
+          <p class="rk-break say">${esc(fill(Q.breakdown, { a: cards, b: photos }))}</p>
           ${rec ? rec.html : ''}<p class="say">${esc(perfect ? Q.perfectSub : Q.goodJob)}</p></div>
         <div class="qz-next two"><button class="qz-ghost" data-again>${esc(Q.again)}</button>${P() ? `<button class="qz-ghost" data-progress>${esc((window.PROGRESS || {}).seeProgress || 'My Progress')}</button>` : ''}<button class="qz-go" data-done>${esc(Q.done)}</button></div>`;
       $q('.qz-x').onclick = closeQuiz; $q('[data-done]').onclick = closeQuiz;
@@ -419,7 +536,7 @@ export function createRocks(api, ui, R, energy) {
       if (rec && rec.finale) setTimeout(() => { closeQuiz(); P().finale(); }, 2200);     // everything passed: the big finish
       else if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
     }
-    ask();
+    if (pending.length) askCard(); else startPhotos();
   }
 
   // ---------- coming into and leaving Rock Types mode ----------
@@ -429,8 +546,8 @@ export function createRocks(api, ui, R, energy) {
     document.body.classList.add('mode-rocks');
     api.hideLabels = true; api.awake = true; group.visible = true; mapEl.hidden = false;
     if (api.grain && api.grain.scale) api.grain.scale(0.001);
-    current = null; mode = sortedCount() === KEYS.length ? 'review' : 'learn';
-    fillBins(); setGemStates();
+    current = null; waitQ = false; mode = sortedCount() === KEYS.length ? 'review' : 'learn';
+    ensurePick(); fillBins(); setGemStates();
     if (sortedCount() > 0) showBins(false); else { bins.hidden = true; }
     ui.setHud(mode === 'review' ? R.hudDone : R.hud);
     ui.updateInsets(); api.setView('tilt', 1200);
@@ -438,7 +555,7 @@ export function createRocks(api, ui, R, energy) {
   function leave() {
     if (!active) return;
     active = false; tk++;
-    closePopup(); closeQuiz(); removeIcon(); current = null;
+    closePopup(); closeQuiz(); removeIcon(); current = null; waitQ = false;
     group.visible = false; bins.hidden = true; mapEl.hidden = true;
     document.body.classList.remove('mode-rocks');
     api.hideLabels = false;
@@ -450,5 +567,5 @@ export function createRocks(api, ui, R, energy) {
 
   // where each crystal is on the screen right now (used by the site's tests)
   const gemScreen = () => KEYS.map(k => { const gm = gems[k], r = cv.getBoundingClientRect(), p = api.project([gm.g.position.x, gm.g.position.y, gm.g.position.z]); return { k, kind: R.rocks[k].kind, x: r.left + p.x, y: r.top + p.y, vis: gm.g.visible, dim: !!gm.dim, pin: !pins[k].hidden }; });
-  return { enter, leave, isActive: () => active, openPopup, runQuiz, gemScreen, state: () => ({ current, mode, sorted: sortedCount(), dragging, popup: !!popup }) };
+  return { enter, leave, isActive: () => active, openPopup, runQuiz, gemScreen, state: () => ({ current, mode, sorted: sortedCount(), dragging, popup: !!popup, waitQ, rockQ: P() ? P().rockQ() : null }) };
 }

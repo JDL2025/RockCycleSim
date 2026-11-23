@@ -107,7 +107,7 @@ window.PROGRESS = {
       steps: '{n} of 8 steps played',
       quiz: '{right} of {n}',
       sorted: '{n} of 12 rocks sorted',
-      firstSort: '{n} of 12 sorted on the first try',
+      firstSort: '✨ {n} of 12 holo cards',
       streak: 'Longest streak: 🔥 {n} in a row'
     },
     // shout-outs; the site picks the best ones for each part
@@ -118,7 +118,7 @@ window.PROGRESS = {
       steps: 'Watched every step of the rock cycle!',
       stories: 'Learned how the Sun and Earth’s heat power the rock cycle!',
       streak: 'Hot streak: {n} right in a row on the diagram!',
-      sorts: 'Sorted {n} rocks without a single miss!',
+      sorts: 'Earned {n} holo cards by sorting without a miss!',
       allRocks: 'Discovered all 12 rocks!'
     }
   },
