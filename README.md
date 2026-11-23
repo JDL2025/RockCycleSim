@@ -57,6 +57,23 @@ The end buttons go to the other story or back to the Real World Rock Cycle. Laye
   - The score counts all 20 (15 diagram pieces + 5 questions) right on the first try, with a big percentage, the two parts listed, and fireworks for a perfect score.
 - The 3D model rests (isn't drawn) while the diagram is showing, to save iPad battery.
 
+## Progress and unlocking
+
+Modes unlock in order, so students work through the lesson as a progression:
+
+| Mode | Unlocks when… |
+|---|---|
+| Real World Rock Cycle | always open. Its **Quiz** button unlocks after all 8 steps have been played all the way through (any order). |
+| Energy | the student passes the **Rock Cycle Quiz** (6 of 8 right on the first try) |
+| Rock Cycle Diagram | the student passes **both** Energy quizzes (3 of 4 each) |
+
+- The Diagram Quiz passes at 14 of 20. Each milestone quiz starts with a **“Get ready!”** pop-up that says the score needed and what passing unlocks. The score screen says “You passed!” or how many are needed, announces anything newly unlocked, and has a **My Progress** button. Retakes mix up the answer order (not True/False).
+- Locked modes and the locked Quiz button show a 🔒. Tapping them explains what to do. A newly unlocked mode glows until it’s opened. Students can always go back to modes they have unlocked. Steps played get a small ✓ in the menu bar.
+- **My Progress** (left menu): a progress bar for the 8 milestones (all 8 steps, each story and lesson, each quiz passed), the 8 step dots, and for each quiz the best score, last try and number of tries. The best score only goes up.
+- **Unlock all** (left menu, for the teacher): type the teacher password. It is kept private and is not written in these files (only a scrambled form is in `js/progress.js`). It unlocks every mode and quiz on that iPad (the button turns green), and has **Lock again** and **Erase this iPad’s progress** for testing.
+- Progress is saved on each iPad. **Add to Home Screen** (in My Progress and Help) shows step-by-step instructions. iPads don’t let a website add itself, and the Home Screen app keeps its own progress, separate from Safari, so students should add it first and always open it from the icon.
+- Pass scores: `js/data/quizzes.js` and `js/data/diagram.js` (`pass`). All the words: `js/data/progress.js`.
+
 ## Updating later
 
 Claude manages this repository for you. If you ever upload files yourself: **Add file → Upload files**, drag in the changed files (keep their folders), then **Commit changes**. Wait 1–2 minutes and reload on the iPad.
@@ -115,6 +132,9 @@ js/data/music.js      songs (edit me)
 js/data/energy.js     Energy mode words (edit me)
 js/data/quizzes.js    quiz questions (edit me)
 js/data/diagram.js    Rock Cycle Diagram words and quiz (edit me)
+js/data/progress.js   My Progress, unlocking and Home Screen words (edit me)
+js/progress.js        saved progress, locks, My Progress, Unlock all
+manifest.webmanifest  Home Screen app name and icon
 assets/tex/           ground and rock photo textures
 assets/fonts/, lib/, music/   fonts, Three.js, songs
 build_tools/          how the textures were made (not needed by the site)

@@ -43,6 +43,7 @@ export function createCycle(api, ui, D) {
   dock.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { ui.closePanels(); if (b.dataset.p === 'quiz') openQuiz(); else play(b.dataset.p); });
   // the 8-question quiz at the end of the main path
   function openQuiz() {
+    if (ui.progress && !ui.progress.canQuiz()) { ui.progress.explainQuizLock(); return; }      // all 8 steps first
     settle(); api.busy = false; api.fx.clear(); api.grain.scale(1); ui.setHud();
     st.lastDone = 'quiz'; updateDock();
     ui.quiz.open('realWorld', () => updateDock(), { side: true });     // the model stays in view beside the quiz
@@ -131,6 +132,7 @@ export function createCycle(api, ui, D) {
     const a = anim; if (!a) return;
     anim = null; api.busy = false; api.fx.clear();
     st.pos = a.pts[a.pts.length - 1].slice(); st.rock = P[a.k].to; st.lastDone = a.k;
+    if (!a.quiet && ui.progress) ui.progress.step(a.k);          // this step was played all the way through
     while (a.shown < P[a.k].text.length) bannerLine(a.k, a.shown++);
     const color = R[st.rock].color;
     api.grain.color(COLOR(color));

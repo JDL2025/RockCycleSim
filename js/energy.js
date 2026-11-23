@@ -47,6 +47,7 @@ export function createEnergy(api, ui, cycle, E) {
     const btn = (label, cls, fn) => { const b = document.createElement('button'); b.className = cls; b.textContent = label; b.onclick = fn; boxBtns.appendChild(b); };
     if (!lastButtons) btn(E.continue, 'go', () => run(() => PARTS[kind][i + 1]()));
     else {
+      if (ui.progress) ui.progress.story(kind);              // the whole story was watched
       const other = kind === 'sedimentary' ? 'igneous' : 'sedimentary';
       if (ui.quiz) btn((window.QUIZZES.words || {}).takeQuiz || 'Take the Quiz', 'go quiz', () => ui.quiz.open(kind));
       btn(E.end.other[kind], ui.quiz ? 'ghost' : 'go', () => start(other));
@@ -77,6 +78,8 @@ export function createEnergy(api, ui, cycle, E) {
   // other modes (the Rock Cycle Diagram) hear about every mode change
   const modeHooks = [];
   function setMode(m) {
+    if (ui.progress && !ui.progress.canEnter(m)) { ui.progress.explainLock(m); return; }     // not unlocked yet
+    if (ui.progress) ui.progress.entered(m);
     token++; hideBox(); ui.closeModal(); ui.closePanels(); if (ui.quiz) ui.quiz.close();
     cleanScene(); cycle.reset();
     applyModeUI(m);

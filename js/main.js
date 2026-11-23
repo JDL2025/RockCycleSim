@@ -1,6 +1,7 @@
 // Rock Cycle Explorer — starts everything.
 import { createScene } from './scene.js';
 import { createUI } from './app.js';
+import { createProgress } from './progress.js';
 
 const ok = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2')); } catch (e) { return false; } })();
 if (!ok) {
@@ -9,6 +10,8 @@ if (!ok) {
   const api = createScene(document.getElementById('stage'));
   const ui = createUI(api);
   window.RCE = { api, ui };
+  // what each student has finished, and which modes are unlocked (saved on the iPad)
+  try { if (window.PROGRESS) ui.progress = createProgress(ui, window.PROGRESS, window.QUIZZES, window.DIAGRAM); } catch (e) { console.warn('Progress not loaded', e); }
 
   // labels on/off
   const lb = document.getElementById('labelsBtn');
@@ -23,7 +26,8 @@ if (!ok) {
       // Energy mode is its own file, so a problem there can't stop the Real World Rock Cycle
       return import('./energy.js').then(e => { if (window.ENERGY && window.RCE.cycle) window.RCE.energy = e.createEnergy(api, ui, window.RCE.cycle, window.ENERGY); })
         // Rock Cycle Diagram mode is its own file too (it adds its own button to the Modes menu)
-        .then(() => window.DIAGRAM && window.RCE.energy && import('./diagram.js').then(d => { window.RCE.diagram = d.createDiagram(api, ui, window.DIAGRAM, window.RCE.energy); }).catch(e => console.warn('Diagram not loaded', e)));
+        .then(() => window.DIAGRAM && window.RCE.energy && import('./diagram.js').then(d => { window.RCE.diagram = d.createDiagram(api, ui, window.DIAGRAM, window.RCE.energy); }).catch(e => console.warn('Diagram not loaded', e)))
+        .then(() => ui.progress && ui.progress.refresh());            // show the locks on the new buttons
     }).catch(e => console.warn('Rock cycle not loaded', e));
   });
 }

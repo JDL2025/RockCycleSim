@@ -909,3 +909,79 @@ body.mode-diagram .story-btns button { min-height: 50px; }
 .qz-score .dg-parts { font-size: 18px; color: #cfd8e6; margin: 2px 0 8px; }
 .qz-score .dg-parts b { color: var(--qt); }
 .dg .gcore { stroke-width: 3; }
+
+/* =====================================================================
+   Progress: locks, My Progress, Unlock all, Get ready pop-up
+   ===================================================================== */
+.rail-btn { position: relative; }
+.rail-btn .lock-badge { display: none; position: absolute; top: 4px; right: 6px; width: 18px; height: 18px; border-radius: 6px; background: #2a3242; align-items: center; justify-content: center; }
+.rail-btn .lock-badge svg { width: 12px; height: 12px; stroke-width: 2.4; }
+.rail-btn.locked { opacity: .5; }
+.rail-btn.locked .lock-badge { display: flex; }
+.rail-btn.fresh:not([aria-pressed="true"]) { animation: pgFresh 1.4s ease-in-out infinite; }
+@keyframes pgFresh { 0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,216,77,.6); } 50% { box-shadow: inset 0 0 0 2px #ffd84d, 0 0 18px rgba(255,216,77,.7); } }
+#teacherBtn.on { color: #7dffb0; }
+.dock-btn.locked { opacity: .55; }
+.dock-btn.locked::after { content: '🔒'; position: absolute; top: 5px; left: 7px; font-size: 13px; line-height: 1; }
+.dock-btn.done::after { content: '✓'; position: absolute; top: 4px; left: 7px; font-size: 13px; font-weight: 900; line-height: 1; color: rgb(var(--c, 125,224,160)); }
+.modal-ok.ghost { background: var(--dusk-2); color: var(--ink); border: 1px solid var(--line); }
+.pg-lock-msg { display: flex; gap: 10px; align-items: flex-start; }
+.pg-lock-msg i { font-style: normal; }
+
+/* My Progress panel */
+.pg { font-size: 17px; }
+.pg-top { margin: 2px 0 12px; }
+.pg-top p { margin: 6px 0 0; font-weight: 800; }
+.pg-bar { height: 14px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+.pg-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22e3c8, #b16cff, #ff3fa4, #ffd84d); transition: width .6s; min-width: 6px; }
+.pg-teacher { margin: 0 0 10px; padding: 8px 12px; border-radius: 12px; background: rgba(125,255,176,.12); color: #7dffb0; font-weight: 700; }
+.pg-mode { margin: 0 0 12px; padding: 10px 12px 6px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+.pg-mode h3 { margin: 0 0 6px; display: flex; align-items: center; gap: 8px; font-size: 19px; }
+.pg-num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--butterscotch); color: var(--dusk); font-size: 15px; font-weight: 900; }
+.pg-lock { display: inline-flex; margin-left: auto; }
+.pg-lock svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+.pg-mode.locked { opacity: .7; }
+.pg-mode.locked .pg-num { background: #3a4356; color: var(--ink); }
+.pg-locked { margin: 2px 0 8px; color: var(--ink-dim); }
+.pg-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.06); }
+.pg-row:first-of-type { border-top: 0; }
+.pg-ic { flex: none; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-weight: 900; background: rgba(255,255,255,.08); color: var(--ink-dim); }
+.pg-row.done .pg-ic { background: #3ddc84; color: #0c1a12; }
+.pg-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pg-txt span { color: var(--ink-dim); font-size: 15px; }
+.pg-dots { display: flex; gap: 6px; margin: 3px 0 1px; }
+.pg-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--c); opacity: .55; }
+.pg-dot.on { background: var(--c); opacity: 1; box-shadow: 0 0 8px var(--c); }
+.pg-score { --q: 177,77,255; flex: none; text-align: center; font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: rgb(var(--q)); }
+.pg-score.t-orange { --q: 255,138,31; } .pg-score.t-pink { --q: 255,63,164; } .pg-score.t-teal { --q: 34,227,200; }
+.pg-score small { display: block; font-family: var(--body); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #3ddc84; margin-top: 3px; }
+.pg-home-btn { margin-top: 4px; }
+.pg-home { margin: 0 0 6px; padding-left: 26px; font-size: 19px; line-height: 1.45; text-align: left; }
+.pg-home li { margin-bottom: 8px; }
+
+/* Unlock all panel */
+.pg-teacher-body p { font-size: 17px; }
+.pg-t-form { display: flex; flex-direction: column; gap: 10px; }
+.pg-t-form input { min-height: 52px; border-radius: 14px; border: 2px solid var(--line); background: rgba(255,255,255,.08); color: var(--ink); font: inherit; font-size: 22px; padding: 0 14px; letter-spacing: .2em; }
+.pg-t-form input.bad { border-color: #ff5a5a; animation: dgShakeX .4s; }
+@keyframes dgShakeX { 25%, 75% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+.pg-t-msg { font-weight: 700; color: #7dffb0; }
+.pg-t-msg.bad { color: #ff7a7a; }
+.pg-t-ok { font-weight: 800; color: #7dffb0; }
+.pg-erase { margin-top: 10px; }
+.pg-erase.armed { border-color: #ff5a5a !important; color: #ff8a8a !important; }
+
+/* Get ready pop-up and pass lines on the score screens */
+.pg-intro-h { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 34px; font-weight: 800; margin: 4px 0 8px; color: var(--qt); }
+.pg-intro-h i { font-style: normal; }
+.pg-intro-big { font-size: 24px; font-weight: 800; line-height: 1.35; margin: 0 0 10px; }
+.pg-intro-big b { color: var(--qt); font-size: 1.15em; }
+.pg-intro-next { font-size: 19px; color: #cfd8e6; }
+.pg-pass { margin: 4px 0 6px; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.pg-pass i { font-style: normal; display: inline-flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; background: #3ddc84; color: #0c1a12; }
+.pg-pass.ok { color: #3ddc84; }
+.pg-pass.no { color: #ffb36b; }
+.pg-pass.soft { font-size: 17px; color: #cfd8e6; }
+.pg-unlock { margin: 4px 0 8px; padding: 8px 12px; border-radius: 12px; font-size: 19px; font-weight: 800; color: #ffd84d; background: rgba(255,216,77,.12); border: 1px solid rgba(255,216,77,.5); display: flex; gap: 8px; align-items: center; animation: pctPop .6s cubic-bezier(.2,.9,.3,1.4) .3s both; }
+.pg-unlock i { font-style: normal; }
+.pg-unlock.gold { color: #fff1a8; background: linear-gradient(90deg, rgba(255,216,77,.25), rgba(255,138,31,.2)); }

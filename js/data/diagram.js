@@ -129,6 +129,7 @@ window.DIAGRAM = {
 
   quiz: {
     title: 'Diagram Quiz',
+    pass: 14,                 // out of 20 (15 diagram pieces + 5 questions), right on the first try
     roundStep: 'Diagram Quiz · Round {n} of 4',
     rounds: [
       { chips: ['sedimentary', 'metamorphic', 'igneous'], text: 'Drag each rock name onto its picture.' },

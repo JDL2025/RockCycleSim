@@ -4,7 +4,9 @@
    (On GitHub: open this file, tap the pencil icon, edit, then
    "Commit changes". Keep the quote marks and commas as they are.)
 
-   Each quiz has a title and a theme color: 'purple', 'orange' or 'pink'.
+   Each quiz has a title, a theme color ('purple', 'orange' or 'pink'),
+   and "pass": how many questions students must get right on the first
+   try to pass. Passing unlocks the next mode (see My Progress).
 
    Each question has:
      q         the question
@@ -45,6 +47,7 @@ window.QUIZZES = {
 
   realWorld: {
     title: 'Rock Cycle Quiz',
+    pass: 6,
     theme: 'purple',
     questions: [
       {
@@ -141,6 +144,7 @@ window.QUIZZES = {
   sedimentary: {
     title: 'Sun Energy Quiz',
     theme: 'orange',
+    pass: 3,
     questions: [
       {
         q: 'Where does the energy that starts making sedimentary rock come from?',
@@ -165,6 +169,17 @@ window.QUIZZES = {
         explain: 'Heat from the Sun makes ocean water evaporate. The water vapor rises into the air.'
       },
       {
+        q: 'What happens when water vapor rises and cools?',
+        answers: [
+          { text: 'It turns into rock.', why: 'Water vapor is water, not rock. When it cools, it makes clouds.' },
+          { text: 'It condenses to form clouds.' },
+          { text: 'It sinks back into the ocean.', why: 'Water vapor rises into the sky. There it cools and forms clouds.' },
+          { text: 'It melts into magma.', why: 'Magma is melted rock, not water.' }
+        ],
+        correct: 1,
+        explain: 'Water vapor condenses to form clouds. Clouds collect more moisture and turn into storms.'
+      },
+      {
         q: 'How do storms help make sedimentary rock?',
         answers: [
           { text: 'Storms melt rock into magma.', why: 'Storms are not hot enough to melt rock.' },
@@ -181,6 +196,7 @@ window.QUIZZES = {
   igneous: {
     title: 'Earth’s Heat Quiz',
     theme: 'pink',
+    pass: 3,
     questions: [
       {
         q: 'How did ancient Earth get so hot?',
@@ -192,6 +208,17 @@ window.QUIZZES = {
         ],
         correct: 2,
         explain: 'Gravity pulled billions of rocks together. All of those crashes made so much heat that Earth melted.'
+      },
+      {
+        q: 'What formed when the surface of the young, hot Earth cooled?',
+        answers: [
+          { text: 'The inner core', why: 'The inner core is deep in the center, and it is still very hot. The surface cooled first.' },
+          { text: 'The Sun', why: 'The Sun is a star. It did not form from Earth cooling.' },
+          { text: 'The crust' },
+          { text: 'Magma', why: 'Magma is melted rock. When the surface cooled, it hardened into the crust.' }
+        ],
+        correct: 2,
+        explain: 'Over a few billion years, the surface of the Earth cooled and formed the crust.'
       },
       {
         q: 'Is Earth’s interior still hot today?',

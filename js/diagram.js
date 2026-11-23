@@ -381,6 +381,7 @@ export function createDiagram(api, ui, D, energy) {
   }
   function showEnd(celebrate) {
     step = NSTEPS;
+    if (celebrate && ui.progress) ui.progress.lesson();          // the whole lesson was watched
     ROCK_KEYS.forEach(k => nodeEl(k).classList.add('seen'));
     hereNode(null);
     // the whole diagram comes alive for a moment, then settles
@@ -413,7 +414,12 @@ export function createDiagram(api, ui, D, energy) {
 
   // ---------- the quiz ----------
   // scoring: each rock name (5) and each arrow (10) counts once: right on the first try or not
+  // the quiz starts with the "Get ready" pop-up that says the score needed to pass
   function startQuiz() {
+    closeScore();
+    if (ui.progress && ui.progress.hasPass('diagram')) ui.progress.passIntro('diagram', beginQuiz); else beginQuiz();
+  }
+  function beginQuiz() {
     closeScore(); resetAll(); ui.setHud(D.quizHud);
     svg.classList.add('quiz');
     ROCK_KEYS.forEach(k => setNode(k, 'seen qz'));
@@ -594,7 +600,7 @@ export function createDiagram(api, ui, D, energy) {
     ui.celebrate(Q.completeTitle, Q.completeSub, { dur: 3.6 });
     setTimeout(() => {
       if (my !== tk || !quiz) return;
-      ui.quiz.open({ title: Q.title, theme: 'teal', finishLabel: Q.questionsFinish, questions: Q.questions }, res => { if (my === tk && quiz) showScore(res); }, { noScore: true });
+      ui.quiz.open({ title: Q.title, theme: 'teal', finishLabel: Q.questionsFinish, questions: Q.questions }, res => { if (my === tk && quiz) showScore(res); }, { noScore: true, progressKey: 'diagram' });
     }, 3900);
   }
 
@@ -604,6 +610,7 @@ export function createDiagram(api, ui, D, energy) {
     const units = [...ROCK_KEYS.map(k => 'r:' + k), ...ARROW_IDS.map(id => 'x:' + id)];
     const dFirst = units.filter(u => !quiz.miss[u]).length, nQ = Q.questions.length, qFirst = res.filter(r => r === 'first').length;
     const n = units.length + nQ, first = dFirst + qFirst, perfect = first === n, pct = Math.round(first / n * 100);
+    const rec = ui.progress ? ui.progress.recordQuiz('diagram', first, n) : null;
     ARROW_IDS.forEach(id => setArrow(id, 'live filled'));
     closeScore();
     scoreBack = document.createElement('div'); scoreBack.className = 'modal-back quiz-back';
@@ -617,13 +624,15 @@ export function createDiagram(api, ui, D, energy) {
           <span class="qz-pct${perfect ? ' perfect' : ''}" aria-label="${pct} percent">${pct}<small>%</small></span>
         </div>
         <p class="dg-parts">${esc(Q.diagramPart)}: <b>${dFirst}/${units.length}</b> · ${esc(Q.questionsPart)}: <b>${qFirst}/${nQ}</b></p>
+        ${rec ? rec.html : ''}
         <p class="say">${esc(perfect ? Q.perfectSub : Q.goodJob)}</p>
       </div>
-      <div class="qz-next"><button class="qz-ghost" data-again>${esc(Q.again)}</button><button class="qz-go" data-done>${esc(Q.done)}</button></div></div>`;
+      <div class="qz-next"><button class="qz-ghost" data-again>${esc(Q.again)}</button>${ui.progress ? `<button class="qz-ghost" data-progress>${esc((window.PROGRESS || {}).seeProgress || 'My Progress')}</button>` : ''}<button class="qz-go" data-done>${esc(Q.done)}</button></div></div>`;
     document.body.appendChild(scoreBack);
     const done = () => { closeScore(); hideMeter(); quiz = null; svg.classList.remove('quiz'); ROCK_KEYS.forEach(k => setNode(k, 'seen')); ui.setHud(D.hud); showEnd(false); ARROW_IDS.forEach(id => setArrow(id, 'seen')); };
     scoreBack.querySelector('[data-done]').onclick = done;
     scoreBack.querySelector('.qz-x').onclick = done;
+    const pb = scoreBack.querySelector('[data-progress]'); if (pb) pb.onclick = () => { done(); ui.progress.openPanel(); };
     scoreBack.querySelector('[data-again]').onclick = () => { closeScore(); startQuiz(); };
     if (perfect) ui.celebrate(Q.perfectTitle, Q.perfectSub, { dur: 6.5 });
   }
@@ -646,5 +655,5 @@ export function createDiagram(api, ui, D, energy) {
   }
   energy.onMode(m => (m === 'diagram' ? enter() : leave()));
 
-  return { enter, leave, startLesson, startQuiz, isActive: () => active, state: () => ({ step, quiz: quiz && { round: quiz.round, done: { ...quiz.done }, miss: { ...quiz.miss } }, busy }) };
+  return { enter, leave, startLesson, startQuiz, beginQuiz, isActive: () => active, state: () => ({ step, quiz: quiz && { round: quiz.round, done: { ...quiz.done }, miss: { ...quiz.miss } }, busy }) };
 }

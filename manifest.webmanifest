@@ -1,0 +1,13 @@
+{
+  "name": "Rock Cycle Explorer",
+  "short_name": "Rock Cycle",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#141a26",
+  "theme_color": "#141a26",
+  "icons": [
+    { "src": "assets/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
