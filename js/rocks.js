@@ -232,7 +232,8 @@ export function createRocks(api, ui, R, energy) {
         <button class="rk-go">${esc(retry ? R.retryButton : review ? R.popupButtonReview : R.popupButton)}</button>
       </div></div>`;
     document.body.appendChild(popup);
-    const done = () => { closePopup(); if (!review && !retry) makeIcon(k); };
+    let used = false;
+    const done = () => { if (used) return; used = true; closePopup(); if (!review && !retry) makeIcon(k); };     // a double-tap makes one rock
     popup.querySelector('.rk-go').onclick = done;
     popup.querySelector('.close').onclick = done;
     const sb = popup.querySelector('[data-say]'); if (sb) sb.onclick = () => ui.speech.read(popup.querySelector('.rk-body'), sb);
@@ -428,7 +429,7 @@ export function createRocks(api, ui, R, energy) {
     wireCQ(box, k, () => {
       const nx = box.querySelector('.qz-next');
       nx.innerHTML = `<button class="qz-go">${esc(S.next)}</button>`;
-      nx.querySelector('button').onclick = () => { closePopup(); then(); };
+      const nb = nx.querySelector('button'); nb.onclick = () => { if (nb.disabled) return; nb.disabled = true; closePopup(); then(); };
     });
   }
 
@@ -490,7 +491,7 @@ export function createRocks(api, ui, R, energy) {
       wireCQ($q('.qz-read'), k, () => {
         const last = c === pending.length - 1;
         $q('.qz-next').innerHTML = `<button class="qz-go">${esc(Q.next)}</button>`;
-        $q('.qz-go').onclick = () => { ui.speech.stop(); if (last) startPhotos(); else { c++; askCard(); } };
+        const nb = $q('.qz-go'); nb.onclick = () => { if (nb.disabled) return; nb.disabled = true; ui.speech.stop(); if (last) startPhotos(); else { c++; askCard(); } };
       });
     }
 
@@ -522,7 +523,7 @@ export function createRocks(api, ui, R, energy) {
         const r = c.getBoundingClientRect(); ui.burst(r.left + r.width / 2, r.top + r.height / 2, true);
         const last = q === asks.length - 1;
         $q('.qz-next').innerHTML = `<button class="qz-go">${esc(last ? Q.finish : Q.next)}</button>`;
-        $q('.qz-go').onclick = () => { if (last) score(); else { q++; ask(); } };
+        const nb = $q('.qz-go'); nb.onclick = () => { if (nb.disabled) return; nb.disabled = true; if (last) score(); else { q++; ask(); } };
       } else {
         tries++;
         c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');

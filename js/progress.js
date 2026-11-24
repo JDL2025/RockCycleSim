@@ -32,7 +32,20 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
 
   // ---------- saved progress ----------
   const blank = () => ({ steps: {}, stories: {}, lesson: false, rocks: {}, quizzes: {}, teacher: false, fresh: {} });
-  function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') return Object.assign(blank(), s); } catch (e) {} return blank(); }
+  // a saved copy that's damaged (or from an old version) never stops the site: anything with the wrong shape starts fresh
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+  function clean(s) {
+    const b = blank();
+    for (const k of ['steps', 'stories', 'rocks', 'fresh', 'rockMiss']) b[k] = isObj(s[k]) ? s[k] : (k === 'rockMiss' ? {} : b[k]);
+    b.quizzes = {};
+    if (isObj(s.quizzes)) for (const [k, q] of Object.entries(s.quizzes)) if (isObj(q) && Number.isFinite(q.best) && Number.isFinite(q.n)) b.quizzes[k] = { best: q.best, last: Number.isFinite(q.last) ? q.last : q.best, tries: Number.isFinite(q.tries) ? q.tries : 1, n: q.n };
+    b.lesson = s.lesson === true; b.teacher = s.teacher === true;
+    if (Number.isFinite(s.bestStreak)) b.bestStreak = s.bestStreak;
+    if (typeof s.completedAt === 'string' || Number.isFinite(s.completedAt)) b.completedAt = s.completedAt;
+    if (isObj(s.rockQ) && Array.isArray(s.rockQ.pick) && isObj(s.rockQ.ans)) b.rockQ = { pick: s.rockQ.pick.filter(k => typeof k === 'string'), ans: s.rockQ.ans, used: !!s.rockQ.used };
+    return b;
+  }
+  function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (isObj(s)) return clean(s); } catch (e) {} return blank(); }
   let S = load();
   // the Rock Types Quiz used to be out of 6: keep an old pass as a pass
   if (RT && S.quizzes.rocks && S.quizzes.rocks.n === 6) { const q = S.quizzes.rocks; q.best = q.best >= 4 ? Math.max(QUIZ.rocks.need, q.best * 2) : q.best * 2; q.last *= 2; q.n = 12; }

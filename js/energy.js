@@ -45,7 +45,8 @@ export function createEnergy(api, ui, cycle, E) {
     boxText.innerHTML = yellow(list[i]);
     boxBtns.innerHTML = '';
     const btn = (label, cls, fn) => { const b = document.createElement('button'); b.className = cls; b.textContent = label; b.onclick = fn; boxBtns.appendChild(b); };
-    if (!lastButtons) btn(E.continue, 'go', () => run(() => PARTS[kind][i + 1]()));
+    let went = false;                                         // a double-tap on Continue plays the next part once
+    if (!lastButtons) btn(E.continue, 'go', () => { if (went) return; went = true; run(() => PARTS[kind][i + 1]()); });
     else {
       if (ui.progress) ui.progress.story(kind);              // the whole story was watched
       const other = kind === 'sedimentary' ? 'igneous' : 'sedimentary';

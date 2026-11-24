@@ -64,7 +64,8 @@ export function createQuiz(ui, Q) {
       const showNext = () => {
         const last = i === n - 1;
         nextEl.innerHTML = `<button class="qz-go">${esc(last ? (noScore && set.finishLabel) || W.finish : W.next)}</button>`;
-        nextEl.querySelector('button').onclick = () => last ? (noScore ? finish() : score()) : ask(i + 1);
+        const nb = nextEl.querySelector('button');
+        nb.onclick = () => { if (nb.disabled) return; nb.disabled = true; last ? (noScore ? finish() : score()) : ask(i + 1); };   // a double-tap counts once
       };
       opts.forEach(b => b.onclick = () => {
         if (done || b.disabled) return;
