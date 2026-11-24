@@ -348,8 +348,7 @@ export function createScene(container) {
   // ---------- camera ----------
   const VIEWS = { front: { yaw: 0, pitch: 0.06 }, tilt: { yaw: -0.42, pitch: 0.46 }, top: { yaw: 0, pitch: 1.42 } };
   // the view the site opens with: the same angle as 'tilt', a little closer (k < 1 = closer) so the model fills the screen
-  // (a portrait screen is too narrow to zoom in without cutting off the sides, so it keeps the whole-model view)
-  VIEWS.home = { yaw: -0.42, pitch: 0.46, get k() { return innerHeight > innerWidth ? 1 : 0.8; } };
+  VIEWS.home = { yaw: -0.42, pitch: 0.46, k: 0.66 };
   const TARGET0 = new THREE.Vector3(0, -0.6, 0);
   const view = { yaw: VIEWS.home.yaw, pitch: VIEWS.home.pitch, k: VIEWS.home.k, target: TARGET0.clone() };
   api.view = view;
