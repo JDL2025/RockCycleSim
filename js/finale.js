@@ -79,7 +79,7 @@ export function showFinale(ui, W, data) {
         <div class="fn-stats">${p.stats}</div>${praise(p.praise)}</section>`).join('')}</div>
       <footer class="fn-foot">
         <p class="fn-overall say">${esc(fill(F.overall, { right, total, pct: pct(right, total) }))}</p>
-        <p class="fn-date">${date ? esc(fill(F.completed, { date })) + ' · ' : ''}${esc(F.show)}</p>
+        ${date ? `<p class="fn-date">${esc(fill(F.completed, { date }))}</p>` : ''}
         <div class="fn-btns"><button class="fn-btn ghost" data-more>🎆 ${esc(F.again)}</button><button class="fn-btn" data-close>${esc(F.close)}</button></div>
       </footer>
     </div>`;

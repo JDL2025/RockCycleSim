@@ -42,7 +42,8 @@ export function createUI(api) {
     if (ui.isSheet()) bannerEl.style.top = (hud.bottom + 8) + 'px';              // tall screens: below the title
     else { bannerEl.style.top = ''; L = Math.max(L, $('#appTitle').getBoundingClientRect().right + 14); }   // wide screens: beside the title
     bannerEl.style.left = ((L + R) / 2) + 'px';
-    bannerEl.style.maxWidth = Math.max(240, Math.min(600, R - L - 24)) + 'px';
+    bannerEl.style.maxWidth = Math.max(240, Math.min(bannerEl.classList.contains('steps') ? 860 : 600, R - L - 24)) + 'px';
+    if (bannerEl.classList.contains('steps')) bannerEl.style.width = bannerEl.style.maxWidth;     // the step messages use the whole space
   }
 
   // ---------------------------------------------------------------
@@ -96,6 +97,9 @@ export function createUI(api) {
     $$('.rail-btn[data-panel]').forEach(b => b.setAttribute('aria-expanded', String(b.dataset.panel === name && willOpen)));
   }
   ui.openPanel = openPanel;
+  // while a panel (Help, My Progress...) is open, the boxes at the bottom step aside so they don't cover it
+  const syncPanelOpen = () => document.body.classList.toggle('panel-open', $$('.panel').some(p => !p.hidden));
+  new MutationObserver(syncPanelOpen).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
   document.addEventListener('click', e => {
     const say = e.target.closest('[data-say-target]');
     if (say) { speech.read($(say.dataset.sayTarget), say); return; }

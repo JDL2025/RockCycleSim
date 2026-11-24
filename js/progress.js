@@ -41,6 +41,9 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
   // ---------- the rules ----------
   const stepsDone = () => STEP_KEYS.filter(k => S.steps[k]).length;
   const passed = key => { const q = S.quizzes[key], d = QUIZ[key]; return !!(q && d && q.best >= d.need); };
+  // which quizzes finish each mode
+  const MODE_QUIZZES = { real: ['realWorld'], energy: ['sedimentary', 'igneous'], diagram: ['diagram'], rocks: ['rocks'] };
+  const modeDone = m => (MODE_QUIZZES[m] || []).filter(k => QUIZ[k]).every(passed) && (MODE_QUIZZES[m] || []).some(k => QUIZ[k]);
   const canQuiz = () => S.teacher || stepsDone() >= STEP_KEYS.length;
   const canEnter = m => S.teacher || m === 'real'
     || (m === 'energy' && passed('realWorld'))
@@ -135,6 +138,9 @@ export function createProgress(ui, W, QZ = {}, DG = null, RT = null) {
       if (!b.querySelector('.lock-badge')) b.insertAdjacentHTML('beforeend', `<i class="lock-badge">${LOCK_SVG}</i>`);
       b.classList.toggle('locked', lock); b.setAttribute('aria-disabled', String(lock));
       b.classList.toggle('fresh', !lock && !!S.fresh[m]);
+      // a green check once the mode's last quiz is passed
+      if (!b.querySelector('.done-badge')) b.insertAdjacentHTML('beforeend', '<i class="done-badge" aria-hidden="true">✓</i>');
+      b.classList.toggle('mode-done', modeDone(m));
     });
     document.querySelectorAll('.dock-btn[data-p]').forEach(b => {
       const k = b.dataset.p;

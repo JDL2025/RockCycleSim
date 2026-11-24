@@ -227,7 +227,7 @@ export function createRocks(api, ui, R, energy) {
       <div class="rk-body">
         ${retry ? `<div class="rk-retry say" style="--h:${rc}"><b>💡 ${esc(R.retryTitles[Math.floor(Math.random() * R.retryTitles.length)])}</b> ${esc(R.retryText)}</div>` : ''}
         <div class="rk-head"><h2 class="say">${esc(rk.name)}</h2>${ui.speech.ok ? `<button class="say-btn small" data-say>${SAY_ICON}<span>Read to me</span></button>` : ''}</div>
-        ${review ? `<p class="rk-kind say">${esc(kd.name)} rock</p>${holo ? `<p class="rk-holo-tag say">${esc(R.holo)}</p>` : ''}` : `<p class="rk-nudge say">${esc(R.nudge)}</p><p class="rk-snote say">${esc(R.surprise.note)}</p>`}
+        ${review ? `<p class="rk-kind say">${esc(kd.name)} rock</p>${holo ? `<p class="rk-holo-tag say">${esc(R.holo)}</p>` : ''}` : `<p class="rk-snote say">${esc(R.surprise.note)}</p>`}
         ${row('🔥', Lb.forms, rk.forms, retry ? ' clue' : '')}${review ? row('🔄', Lb.startsAs, rk.startsAs) : ''}${row('📍', Lb.found, rk.found)}${row('🛠️', Lb.used, rk.used)}${row('⭐', Lb.wow, rk.wow)}
         <button class="rk-go">${esc(retry ? R.retryButton : review ? R.popupButtonReview : R.popupButton)}</button>
       </div></div>`;
@@ -308,7 +308,7 @@ export function createRocks(api, ui, R, energy) {
     const open = n === KEYS.length || teacher();
     acts.innerHTML = `<button class="rk-btn go${open ? '' : ' locked'}" data-quiz>${open ? '' : '<i class="rk-lock">🔒</i>'}${esc(R.takeQuiz)}</button>${n === KEYS.length ? `<button class="rk-btn" data-over>${esc(R.startOver)}</button>` : ''}`;
     acts.querySelector('[data-quiz]').onclick = () => (n === KEYS.length || teacher() ? openQuizIntro() : explainQuizLock());
-    const o = acts.querySelector('[data-over]'); if (o) o.onclick = startOver;
+    const o = acts.querySelector('[data-over]'); if (o) o.onclick = askReplay;
   }
   bins.addEventListener('click', e => {           // tap a mini card: it lifts up, then the big card opens
     const sl = e.target.closest('.rk-slot.full'); if (!sl || current || quizBack || popup || waitQ) return;
@@ -438,6 +438,12 @@ export function createRocks(api, ui, R, energy) {
     ui.celebrate(R.allSorted, R.allSortedSub, { dur: 3.6 });
     setTimeout(() => { if (my === tk && active) openQuizIntro(); }, 3900);
   }
+  // replaying clears the sorted cards (asks first, so nobody wipes their collection by accident)
+  function askReplay() {
+    if (current || popup || quizBack || waitQ) return;
+    ui.modal({ title: R.replayTitle, html: `<p class="lead">${esc(R.replayText)}</p>`,
+      buttons: [{ label: R.replayYes, onClick: startOver }, { label: R.replayNo, cls: 'ghost' }] });
+  }
   function startOver() { if (P()) P().rocksReset(); closeQuiz(); removeIcon(); current = null; mode = 'learn'; ensurePick(); fillBins(); setGemStates(); ui.setHud(R.hud); }
 
   // ---------- the Rock Types Quiz: tap 2 rocks of each kind ----------
@@ -453,7 +459,7 @@ export function createRocks(api, ui, R, energy) {
   function openQuizIntro() {
     const { rq, pending } = quizPlan();
     const a = rq.pick.filter(k => rq.ans[k]).length;
-    const extra = pending.length ? fill(Q.introCards, { m: pending.length }) : fill(Q.introSorted, { a });
+    const extra = pending.length === 1 ? Q.introCard1 : pending.length ? fill(Q.introCards, { m: pending.length }) : fill(Q.introSorted, { a });
     if (P() && P().hasPass('rocks')) P().passIntro('rocks', runQuiz, null, extra); else runQuiz();
   }
   function runQuiz() {

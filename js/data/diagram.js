@@ -24,7 +24,7 @@
    ===================================================================== */
 window.DIAGRAM = {
   button: 'Rock Cycle Diagram',
-  hud: 'Diagram mode: follow the rock around the circle!',
+  hud: 'Diagram Mode: follow the rock around the circle!',
   quizHud: 'Diagram quiz: finish the rock cycle diagram!',
 
   rocks: {
@@ -80,7 +80,7 @@ window.DIAGRAM = {
       step: 'You did it!',
       text: 'You learned the whole rock cycle diagram! Tap any rock or arrow picture to see it again.'
     },
-    buttons: { start: 'Start', next: 'Next', quiz: 'Take the Diagram Quiz', again: 'Watch it again', back: 'Back to the Real World Rock Cycle' },
+    buttons: { start: 'Start', next: 'Next', quiz: 'Take the Diagram Quiz', again: 'Watch it again', back: 'Go Home' },
 
     // Checkpoint questions pop up when students tap Next after these steps
     // (steps are counted 1–8: Big Circle steps 1–5, then Shortcut rules 6–8).

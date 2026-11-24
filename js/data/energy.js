@@ -16,7 +16,7 @@
    ===================================================================== */
 window.ENERGY = {
   modeName: 'Energy',
-  hud: 'Energy mode: follow the energy!',
+  hud: 'Energy Mode: follow the energy!',
 
   popup: {
     title: 'Energy',
@@ -51,6 +51,6 @@ window.ENERGY = {
 
   end: {
     other: { sedimentary: 'Now make igneous rock', igneous: 'Now make sedimentary rock' },
-    back: 'Back to the Real World Rock Cycle'
+    back: 'Go Home'
   }
 };

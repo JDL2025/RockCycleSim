@@ -45,6 +45,7 @@ export function createCycle(api, ui, D) {
   function openQuiz() {
     if (ui.progress && !ui.progress.canQuiz()) { ui.progress.explainQuizLock(); return; }      // all 8 steps first
     settle(); api.busy = false; api.fx.clear(); api.grain.scale(1); ui.setHud();
+    ui.clearFlare(); ui.banner(null); bannerEl = null;          // the last step's message goes away
     st.lastDone = 'quiz'; updateDock();
     ui.quiz.open('realWorld', () => updateDock(), { side: true });     // the model stays in view beside the quiz
   }
@@ -64,16 +65,22 @@ export function createCycle(api, ui, D) {
 
   // ---------- the message at the top: lines appear one by one and all of them stay ----------
   let bannerEl = null;
-  function bannerStart() { bannerEl = ui.banner('', 0, 'steps'); }
+  const SAY_ICON = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+  function bannerStart() {
+    if (ui.speech) ui.speech.stop();
+    bannerEl = ui.banner(ui.speech && ui.speech.ok ? `<button class="say-btn b-say" aria-label="Read to me" title="Read to me">${SAY_ICON}</button>` : '', 0, 'steps');
+    const sb = bannerEl.querySelector('.b-say');
+    if (sb) sb.onclick = e => { e.stopPropagation(); ui.speech.read(bannerEl, sb); };
+  }
   function bannerLine(k, i) {
     if (!bannerEl) return;
-    const p = document.createElement('p');
+    const p = document.createElement('p'); p.className = 'say';
     p.innerHTML = (i === 0 ? `<b>${esc(P[k].name)}:</b> ` : '') + yellow(P[k].text[i]);
     bannerEl.appendChild(p); ui.placeBanner();
   }
   function bannerMade(k) {
     if (!bannerEl || !P[k].made) return;
-    const p = document.createElement('p'); p.className = 'made'; p.textContent = P[k].made;
+    const p = document.createElement('p'); p.className = 'made say'; p.textContent = P[k].made;
     p.style.color = R[P[k].to].color;
     bannerEl.appendChild(p); ui.placeBanner();
   }

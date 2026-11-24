@@ -25,7 +25,7 @@ window.PROGRESS = {
   title: 'My Progress',
   overall: '{n} of {total} milestones complete',
 
-  modes: { real: 'Real World Rock Cycle', energy: 'Energy', diagram: 'Rock Cycle Diagram', rocks: 'Rock Types' },
+  modes: { real: 'Real World Rock Cycle Mode', energy: 'Energy Mode', diagram: 'Rock Cycle Diagram Mode', rocks: 'Rock Types Mode' },
 
   // the rows in My Progress
   rows: {
@@ -51,9 +51,9 @@ window.PROGRESS = {
   // locked modes and the locked Quiz button
   lockedTitle: 'Locked',
   lockedMode: {
-    energy: 'Pass the Rock Cycle Quiz to unlock Energy.',
-    diagram: 'Pass the Sun Energy Quiz and the Earth’s Heat Quiz to unlock the Rock Cycle Diagram.',
-    rocks: 'Pass the Diagram Quiz to unlock Rock Types.'
+    energy: 'Pass the Rock Cycle Quiz to unlock Energy Mode.',
+    diagram: 'Pass the Sun Energy Quiz and the Earth’s Heat Quiz to unlock Rock Cycle Diagram Mode.',
+    rocks: 'Pass the Diagram Quiz to unlock Rock Types Mode.'
   },
   lockedQuiz: 'Play all 8 steps in the menu bar first! You have played {n} of 8.',
   lockedOk: 'OK',
@@ -72,7 +72,7 @@ window.PROGRESS = {
   alreadyPassed: 'Your best score already passed. Nice!',
   notPassed: 'You need {need} out of {n} to pass. Try again!',
   unlockedNow: '{mode} is now unlocked!',
-  allDone: 'You finished all of Rock Cycle Explorer!',
+  allDone: 'You finished all 4 modes of Rock Cycle Explorer!',
   seeProgress: 'My Progress',
 
   // teacher panel
@@ -95,9 +95,8 @@ window.PROGRESS = {
   // the big finish screen (shows when a student passes every quiz)
   finale: {
     title: 'Rock Cycle Champion!',
-    sub: 'You completed all of Rock Cycle Explorer!',
+    sub: 'You completed all 4 modes of Rock Cycle Explorer!',
     overall: 'Overall: {right} of {total} right on the first try ({pct}%)',
-    show: 'Show your teacher!',
     close: 'Keep exploring',
     again: 'More fireworks!',
     open: '🏆 My Trophy Room',

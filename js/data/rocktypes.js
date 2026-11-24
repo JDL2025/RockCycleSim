@@ -45,7 +45,11 @@ window.ROCK_TYPES = {
   quizLockTitle: 'Quiz locked',
   quizLock: 'Sort all 12 rocks first! Then you can take the Rock Types Quiz. You have sorted {n} of 12.',
   quizLockOk: 'OK',
-  startOver: 'Start over',
+  startOver: '🔁 Replay Rock Types',
+  replayTitle: 'Replay Rock Types Mode?',
+  replayText: 'Your 12 rock cards will be cleared so you can sort them all again. Your best quiz score stays saved.',
+  replayYes: 'Yes, replay',
+  replayNo: 'No, keep my cards',
   allSorted: 'All 12 rocks sorted!',
   allSortedSub: 'Now take the Rock Types Quiz.',
 
@@ -55,7 +59,6 @@ window.ROCK_TYPES = {
   popupButtonReview: 'Close',
   photoBy: 'Photo',
 
-  nudge: '🔍 Read how it formed. That’s your clue!',
   // wrong box: the rock's card pops up again with this message on top
   retryTitles: ['Not quite!', 'So close!', 'Good try!', 'Almost!', 'Hmm, not yet!'],
   retryText: 'Read how it formed again, then try another box!',
@@ -201,6 +204,7 @@ window.ROCK_TYPES = {
     cardStep: 'Card question {n} of {m}',
     introSorted: 'While sorting, you got {a} of 6 card questions right. Now answer 6 photo questions.',
     introCards: 'First, answer {m} card questions. Then answer 6 photo questions.',
+    introCard1: 'First, answer 1 card question. Then answer 6 photo questions.',
     breakdown: 'Card questions: {a} of 6 · Photo questions: {b} of 6',
     right: 'Correct! {name} is {kind}.',
     wrong: 'Not quite. {name} is {kind}. Try again!',

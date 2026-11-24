@@ -50,8 +50,19 @@ export function createEnergy(api, ui, cycle, E) {
       if (ui.progress) ui.progress.story(kind);              // the whole story was watched
       const other = kind === 'sedimentary' ? 'igneous' : 'sedimentary';
       if (ui.quiz) btn((window.QUIZZES.words || {}).takeQuiz || 'Take the Quiz', 'go quiz', () => ui.quiz.open(kind));
-      btn(E.end.other[kind], ui.quiz ? 'ghost' : 'go', () => start(other));
+      btn(E.end.other[kind], (ui.quiz ? 'ghost' : 'go') + ' to-' + other, () => start(other));    // "Now make igneous rock" is red, sedimentary green
       btn(E.end.back, 'ghost', () => setMode('real'));
+      // the quiz's "Get ready" pop-up opens by itself a few seconds after the last part
+      // (after Read to me finishes, if it's reading), so nobody has to watch the story again to find the quiz
+      if (ui.quiz) {
+        const tk = token, t0 = performance.now();
+        const tryOpen = () => {
+          if (tk !== token || mode !== 'energy' || box.hidden || !boxBtns.querySelector('.go.quiz')) return;
+          if (ui.speech.isOn() || document.querySelector('.modal-back, .celebrate') || performance.now() - t0 < 3500) { setTimeout(tryOpen, 500); return; }
+          ui.quiz.open(kind);
+        };
+        setTimeout(tryOpen, 3500);
+      }
     }
     box.hidden = false;
     box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');

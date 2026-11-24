@@ -388,6 +388,16 @@ export function createDiagram(api, ui, D, energy) {
     ARROW_IDS.forEach(id => setArrow(id, celebrate ? 'live' : 'seen'));
     if (celebrate) { const my = tk; setTimeout(() => { if (my === tk && !quiz) ARROW_IDS.forEach(id => { if (arrowEls(id)[0].classList.contains('live')) setArrow(id, 'seen'); }); }, 6000); ROCK_KEYS.forEach((k, i) => setTimeout(() => { if (my === tk) popNode(k); }, 200 + i * 180)); }
     setBox(L.end.step, fmt(L.end.text), endButtons());
+    // at the end of the lesson the Diagram Quiz's "Get ready" pop-up opens by itself (after Read to me, if it's reading)
+    if (celebrate) {
+      const my = tk, t0 = performance.now();
+      const tryOpen = () => {
+        if (my !== tk || !active || quiz) return;
+        if (ui.speech.isOn() || document.querySelector('.modal-back, .celebrate') || performance.now() - t0 < 4000) { setTimeout(tryOpen, 500); return; }
+        startQuiz();
+      };
+      setTimeout(tryOpen, 4000);
+    }
   }
   // explore: tap a box or an arrow picture you have already seen
   function textFor(id) {
