@@ -436,7 +436,7 @@ export function createRocks(api, ui, R, energy) {
     const my = tk;
     mode = 'review'; setGemStates(); fillBins(); ui.setHud(R.hudDone);
     ui.celebrate(R.allSorted, R.allSortedSub, { dur: 3.6 });
-    setTimeout(() => { if (my === tk && active) openQuizIntro(); }, 3900);
+    setTimeout(() => { if (my === tk && active && !quizBack && !popup && !document.querySelector('.modal-back')) openQuizIntro(); }, 3900);
   }
   // replaying clears the sorted cards (asks first, so nobody wipes their collection by accident)
   function askReplay() {

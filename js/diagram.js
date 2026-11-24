@@ -390,9 +390,9 @@ export function createDiagram(api, ui, D, energy) {
     setBox(L.end.step, fmt(L.end.text), endButtons());
     // at the end of the lesson the Diagram Quiz's "Get ready" pop-up opens by itself (after Read to me, if it's reading)
     if (celebrate) {
-      const my = tk, t0 = performance.now();
+      const my = tk, t0 = performance.now(), opened = quizOpens;
       const tryOpen = () => {
-        if (my !== tk || !active || quiz) return;
+        if (my !== tk || !active || quiz || quizOpens !== opened) return;     // stop if the quiz was opened some other way
         if (ui.speech.isOn() || document.querySelector('.modal-back, .celebrate') || performance.now() - t0 < 4000) { setTimeout(tryOpen, 500); return; }
         startQuiz();
       };
@@ -425,8 +425,9 @@ export function createDiagram(api, ui, D, energy) {
   // ---------- the quiz ----------
   // scoring: each rock name (5) and each arrow (10) counts once: right on the first try or not
   // the quiz starts with the "Get ready" pop-up that says the score needed to pass
+  let quizOpens = 0;
   function startQuiz() {
-    closeScore();
+    quizOpens++; closeScore();
     if (ui.progress && ui.progress.hasPass('diagram')) ui.progress.passIntro('diagram', beginQuiz); else beginQuiz();
   }
   function beginQuiz() {
