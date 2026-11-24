@@ -1263,3 +1263,6 @@ body.mode-rocks .dock, body.mode-rocks .banner, body.mode-rocks #labelsBtn { dis
 
 /* a side panel is open: the story box and the Rock Types boxes step aside */
 body.panel-open #story, body.panel-open #rkBins { visibility: hidden; }
+
+/* a sorted rock's cartoon steps aside for a crystal underneath it that still needs sorting */
+.rk-pin.yield { opacity: .25; pointer-events: none; }

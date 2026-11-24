@@ -167,6 +167,16 @@ export function createRocks(api, ui, R, energy) {
     mapEl.appendChild(b); pins[k] = b;
   });
   document.body.appendChild(mapEl);
+  // a cartoon that sits on top of a crystal still waiting to be sorted fades and lets taps through to the crystal
+  function yieldPins() {
+    const r = cv.getBoundingClientRect();
+    const open = KEYS.filter(k => gems[k].g.visible).map(k => { const gm = gems[k], q = api.project([gm.g.position.x, gm.base, gm.g.position.z]); return q.ok ? { x: r.left + q.x, y: r.top + q.y } : null; }).filter(Boolean);
+    for (const k of KEYS) {
+      const pin = pins[k]; if (pin.hidden) continue;
+      const px = parseFloat(pin.style.left), py = parseFloat(pin.style.top);
+      pin.classList.toggle('yield', open.some(o => Math.hypot(o.x - px, o.y - py) < 46));
+    }
+  }
   function placePin(k) {
     const gm = gems[k], pin = pins[k], r = cv.getBoundingClientRect(), p = api.project([gm.g.position.x, gm.base, gm.g.position.z]);
     pin.style.visibility = p.ok ? '' : 'hidden';
@@ -190,6 +200,7 @@ export function createRocks(api, ui, R, energy) {
     }
     if (iconEl && !dragging && !flying) placeIcon();
     for (const k of KEYS) if (!pins[k].hidden) placePin(k);
+    yieldPins();
   });
 
   // ---------- tapping a crystal ----------
