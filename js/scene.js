@@ -347,8 +347,11 @@ export function createScene(container) {
 
   // ---------- camera ----------
   const VIEWS = { front: { yaw: 0, pitch: 0.06 }, tilt: { yaw: -0.42, pitch: 0.46 }, top: { yaw: 0, pitch: 1.42 } };
+  // the view the site opens with: the same angle as 'tilt', a little closer (k < 1 = closer) so the model fills the screen
+  // (a portrait screen is too narrow to zoom in without cutting off the sides, so it keeps the whole-model view)
+  VIEWS.home = { yaw: -0.42, pitch: 0.46, get k() { return innerHeight > innerWidth ? 1 : 0.8; } };
   const TARGET0 = new THREE.Vector3(0, -0.6, 0);
-  const view = { yaw: VIEWS.tilt.yaw, pitch: VIEWS.tilt.pitch, k: 1, target: TARGET0.clone() };
+  const view = { yaw: VIEWS.home.yaw, pitch: VIEWS.home.pitch, k: VIEWS.home.k, target: TARGET0.clone() };
   api.view = view;
   let W = 1, H = 1;
   // how far away the camera must be so the whole block fits in the free space (opening view)
@@ -395,6 +398,7 @@ export function createScene(container) {
     };
     lastInput = performance.now(); api.requestRender();
   };
+  const toV = new THREE.Vector3();
   api.setView = (name, ms = 1000) => {
     const v = VIEWS[name]; if (!v) return;
     const from = { yaw: view.yaw, pitch: view.pitch, k: view.k, t: view.target.clone() };
@@ -403,8 +407,8 @@ export function createScene(container) {
     const t0 = performance.now();
     viewTween = now => {
       const t = clamp((now - t0) / ms, 0, 1), e = ease(t);
-      view.yaw = lerp(from.yaw, yawTo, e); view.pitch = lerp(from.pitch, v.pitch, e); view.k = lerp(from.k, 1, e);
-      view.target.lerpVectors(from.t, TARGET0, e);
+      view.yaw = lerp(from.yaw, yawTo, e); view.pitch = lerp(from.pitch, v.pitch, e); view.k = lerp(from.k, v.k || 1, e);
+      view.target.lerpVectors(from.t, v.target ? toV.set(...v.target) : TARGET0, e);
       if (t >= 1) viewTween = null;
     };
     api.requestRender();

@@ -83,7 +83,7 @@ export function createEnergy(api, ui, cycle, E) {
     token++; hideBox(); ui.closeModal(); ui.closePanels(); if (ui.quiz) ui.quiz.close();
     cleanScene(); cycle.reset();
     applyModeUI(m);
-    if (m === 'real') { api.setView('tilt', 1200); return; }
+    if (m === 'real') { api.setView('home', 1200); return; }
     if (m === 'energy') askKind();
   }
   function applyModeUI(m) {

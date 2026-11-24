@@ -117,7 +117,7 @@ export function createCycle(api, ui, D) {
     if (hopFrom) { api.grain.set(hopFrom); } else { api.grain.set(pts[0]); api.grain.color(COLOR(R[st.rock].color)); }
     // camera moves for some steps
     const V = cam && STEP_VIEWS[k];
-    if (V === 'opening') api.setView('tilt', 1600);
+    if (V === 'opening') api.setView('home', 1600);
     else if (V) api.flyTo(V, k === 'transport' ? 1800 : 1600);
     if (k === 'cement') {
       clearTimeout(viewTimer);
